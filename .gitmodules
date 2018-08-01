@@ -1,0 +1,3 @@
+[submodule "database/seeds/russian-troll-tweets"]
+	path = database/seeds/russian-troll-tweets
+	url = git@github.com:fivethirtyeight/russian-troll-tweets.git
