@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tweet extends Model
 {
+    /**
+     * Which attributes can be filled in this tweet model
+     * @var array
+     */
     protected $fillable = [
         'external_author_id',
         'author',
@@ -23,4 +27,12 @@ class Tweet extends Model
         'account_category',
         'new_june_2018'
     ];
+
+    /**
+     * Get the hastags for this tweet.
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function hashtags(){
+        return $this->hasMany('App/Hashtag');
+    }
 }
