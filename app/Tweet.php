@@ -35,4 +35,12 @@ class Tweet extends Model
     public function hashtags(){
         return $this->hasMany('App/Hashtag');
     }
+
+    /**
+     * Get the links for this tweet.
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function links(){
+        return $this->hasMany('App/Link');
+    }
 }
