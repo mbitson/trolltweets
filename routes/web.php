@@ -12,5 +12,9 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('sap');
+});
+
+Route::prefix('api')->group(function(){
+    Route::get('hashtags/top/{limit}', 'HashtagController@top');
 });
