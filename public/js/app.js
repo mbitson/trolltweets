@@ -1,6 +1,36 @@
 /******/ (function(modules) { // webpackBootstrap
+/******/ 	// install a JSONP callback for chunk loading
+/******/ 	var parentJsonpFunction = window["webpackJsonp"];
+/******/ 	window["webpackJsonp"] = function webpackJsonpCallback(chunkIds, moreModules, executeModules) {
+/******/ 		// add "moreModules" to the modules object,
+/******/ 		// then flag all "chunkIds" as loaded and fire callback
+/******/ 		var moduleId, chunkId, i = 0, resolves = [], result;
+/******/ 		for(;i < chunkIds.length; i++) {
+/******/ 			chunkId = chunkIds[i];
+/******/ 			if(installedChunks[chunkId]) {
+/******/ 				resolves.push(installedChunks[chunkId][0]);
+/******/ 			}
+/******/ 			installedChunks[chunkId] = 0;
+/******/ 		}
+/******/ 		for(moduleId in moreModules) {
+/******/ 			if(Object.prototype.hasOwnProperty.call(moreModules, moduleId)) {
+/******/ 				modules[moduleId] = moreModules[moduleId];
+/******/ 			}
+/******/ 		}
+/******/ 		if(parentJsonpFunction) parentJsonpFunction(chunkIds, moreModules, executeModules);
+/******/ 		while(resolves.length) {
+/******/ 			resolves.shift()();
+/******/ 		}
+/******/
+/******/ 	};
+/******/
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
+/******/
+/******/ 	// objects to store loaded and loading chunks
+/******/ 	var installedChunks = {
+/******/ 		6: 0
+/******/ 	};
 /******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
@@ -26,6 +56,55 @@
 /******/ 		return module.exports;
 /******/ 	}
 /******/
+/******/ 	// This file contains only the entry chunk.
+/******/ 	// The chunk loading function for additional chunks
+/******/ 	__webpack_require__.e = function requireEnsure(chunkId) {
+/******/ 		var installedChunkData = installedChunks[chunkId];
+/******/ 		if(installedChunkData === 0) {
+/******/ 			return new Promise(function(resolve) { resolve(); });
+/******/ 		}
+/******/
+/******/ 		// a Promise means "currently loading".
+/******/ 		if(installedChunkData) {
+/******/ 			return installedChunkData[2];
+/******/ 		}
+/******/
+/******/ 		// setup Promise in chunk cache
+/******/ 		var promise = new Promise(function(resolve, reject) {
+/******/ 			installedChunkData = installedChunks[chunkId] = [resolve, reject];
+/******/ 		});
+/******/ 		installedChunkData[2] = promise;
+/******/
+/******/ 		// start chunk loading
+/******/ 		var head = document.getElementsByTagName('head')[0];
+/******/ 		var script = document.createElement('script');
+/******/ 		script.type = "text/javascript";
+/******/ 		script.charset = 'utf-8';
+/******/ 		script.async = true;
+/******/ 		script.timeout = 120000;
+/******/
+/******/ 		if (__webpack_require__.nc) {
+/******/ 			script.setAttribute("nonce", __webpack_require__.nc);
+/******/ 		}
+/******/ 		script.src = __webpack_require__.p + "" + ({}[chunkId]||chunkId) + ".js";
+/******/ 		var timeout = setTimeout(onScriptComplete, 120000);
+/******/ 		script.onerror = script.onload = onScriptComplete;
+/******/ 		function onScriptComplete() {
+/******/ 			// avoid mem leaks in IE.
+/******/ 			script.onerror = script.onload = null;
+/******/ 			clearTimeout(timeout);
+/******/ 			var chunk = installedChunks[chunkId];
+/******/ 			if(chunk !== 0) {
+/******/ 				if(chunk) {
+/******/ 					chunk[1](new Error('Loading chunk ' + chunkId + ' failed.'));
+/******/ 				}
+/******/ 				installedChunks[chunkId] = undefined;
+/******/ 			}
+/******/ 		};
+/******/ 		head.appendChild(script);
+/******/
+/******/ 		return promise;
+/******/ 	};
 /******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
@@ -59,18 +138,22 @@
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "/";
 /******/
+/******/ 	// on error function for async loading
+/******/ 	__webpack_require__.oe = function(err) { console.error(err); throw err; };
+/******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(__webpack_require__.s = 14);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 0:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bind = __webpack_require__(8);
+var bind = __webpack_require__(7);
 var isBuffer = __webpack_require__(19);
 
 /*global toString:true*/
@@ -374,116 +457,8 @@ module.exports = {
 
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports) {
 
-/* globals __VUE_SSR_CONTEXT__ */
-
-// IMPORTANT: Do NOT use ES2015 features in this file.
-// This module is a runtime utility for cleaner component module output and will
-// be included in the final webpack user bundle.
-
-module.exports = function normalizeComponent (
-  rawScriptExports,
-  compiledTemplate,
-  functionalTemplate,
-  injectStyles,
-  scopeId,
-  moduleIdentifier /* server only */
-) {
-  var esModule
-  var scriptExports = rawScriptExports = rawScriptExports || {}
-
-  // ES6 modules interop
-  var type = typeof rawScriptExports.default
-  if (type === 'object' || type === 'function') {
-    esModule = rawScriptExports
-    scriptExports = rawScriptExports.default
-  }
-
-  // Vue.extend constructor export interop
-  var options = typeof scriptExports === 'function'
-    ? scriptExports.options
-    : scriptExports
-
-  // render functions
-  if (compiledTemplate) {
-    options.render = compiledTemplate.render
-    options.staticRenderFns = compiledTemplate.staticRenderFns
-    options._compiled = true
-  }
-
-  // functional template
-  if (functionalTemplate) {
-    options.functional = true
-  }
-
-  // scopedId
-  if (scopeId) {
-    options._scopeId = scopeId
-  }
-
-  var hook
-  if (moduleIdentifier) { // server build
-    hook = function (context) {
-      // 2.3 injection
-      context =
-        context || // cached call
-        (this.$vnode && this.$vnode.ssrContext) || // stateful
-        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
-      // 2.2 with runInNewContext: true
-      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-        context = __VUE_SSR_CONTEXT__
-      }
-      // inject component styles
-      if (injectStyles) {
-        injectStyles.call(this, context)
-      }
-      // register component module identifier for async chunk inferrence
-      if (context && context._registeredComponents) {
-        context._registeredComponents.add(moduleIdentifier)
-      }
-    }
-    // used by ssr in case component is cached and beforeCreate
-    // never gets called
-    options._ssrRegister = hook
-  } else if (injectStyles) {
-    hook = injectStyles
-  }
-
-  if (hook) {
-    var functional = options.functional
-    var existing = functional
-      ? options.render
-      : options.beforeCreate
-
-    if (!functional) {
-      // inject component registration as beforeCreate hook
-      options.beforeCreate = existing
-        ? [].concat(existing, hook)
-        : [hook]
-    } else {
-      // for template-only hot-reload because in that case the render fn doesn't
-      // go through the normalizer
-      options._injectStyles = hook
-      // register for functioal component in vue file
-      options.render = function renderWithStyleInjection (h, context) {
-        hook.call(context)
-        return existing(h, context)
-      }
-    }
-  }
-
-  return {
-    esModule: esModule,
-    exports: scriptExports,
-    options: options
-  }
-}
-
-
-/***/ }),
-/* 2 */
+/***/ 1:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11446,141 +11421,1254 @@ Vue.compile = compileToFunctions;
 
 module.exports = Vue;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(16).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(16).setImmediate))
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports) {
 
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 4 */
+/***/ 10:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(process) {
 
-var utils = __webpack_require__(0);
-var normalizeHeaderName = __webpack_require__(21);
 
-var DEFAULT_CONTENT_TYPE = {
-  'Content-Type': 'application/x-www-form-urlencoded'
+module.exports = function isCancel(value) {
+  return !!(value && value.__CANCEL__);
 };
 
-function setContentTypeIfUnset(headers, value) {
-  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
-    headers['Content-Type'] = value;
-  }
-}
-
-function getDefaultAdapter() {
-  var adapter;
-  if (typeof XMLHttpRequest !== 'undefined') {
-    // For browsers use XHR adapter
-    adapter = __webpack_require__(9);
-  } else if (typeof process !== 'undefined') {
-    // For node use HTTP adapter
-    adapter = __webpack_require__(9);
-  }
-  return adapter;
-}
-
-var defaults = {
-  adapter: getDefaultAdapter(),
-
-  transformRequest: [function transformRequest(data, headers) {
-    normalizeHeaderName(headers, 'Content-Type');
-    if (utils.isFormData(data) ||
-      utils.isArrayBuffer(data) ||
-      utils.isBuffer(data) ||
-      utils.isStream(data) ||
-      utils.isFile(data) ||
-      utils.isBlob(data)
-    ) {
-      return data;
-    }
-    if (utils.isArrayBufferView(data)) {
-      return data.buffer;
-    }
-    if (utils.isURLSearchParams(data)) {
-      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
-      return data.toString();
-    }
-    if (utils.isObject(data)) {
-      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
-      return JSON.stringify(data);
-    }
-    return data;
-  }],
-
-  transformResponse: [function transformResponse(data) {
-    /*eslint no-param-reassign:0*/
-    if (typeof data === 'string') {
-      try {
-        data = JSON.parse(data);
-      } catch (e) { /* Ignore */ }
-    }
-    return data;
-  }],
-
-  /**
-   * A timeout in milliseconds to abort a request. If set to 0 (default) a
-   * timeout is not created.
-   */
-  timeout: 0,
-
-  xsrfCookieName: 'XSRF-TOKEN',
-  xsrfHeaderName: 'X-XSRF-TOKEN',
-
-  maxContentLength: -1,
-
-  validateStatus: function validateStatus(status) {
-    return status >= 200 && status < 300;
-  }
-};
-
-defaults.headers = {
-  common: {
-    'Accept': 'application/json, text/plain, */*'
-  }
-};
-
-utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
-  defaults.headers[method] = {};
-});
-
-utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
-  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
-});
-
-module.exports = defaults;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ }),
-/* 5 */
+
+/***/ 11:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+ * A `Cancel` is an object that is thrown when an operation is canceled.
+ *
+ * @class
+ * @param {string=} message The message.
+ */
+function Cancel(message) {
+  this.message = message;
+}
+
+Cancel.prototype.toString = function toString() {
+  return 'Cancel' + (this.message ? ': ' + this.message : '');
+};
+
+Cancel.prototype.__CANCEL__ = true;
+
+module.exports = Cancel;
+
+
+/***/ }),
+
+/***/ 12:
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_RESULT__;// TinyColor v1.4.1
+// https://github.com/bgrins/TinyColor
+// Brian Grinstead, MIT License
+
+(function(Math) {
+
+var trimLeft = /^\s+/,
+    trimRight = /\s+$/,
+    tinyCounter = 0,
+    mathRound = Math.round,
+    mathMin = Math.min,
+    mathMax = Math.max,
+    mathRandom = Math.random;
+
+function tinycolor (color, opts) {
+
+    color = (color) ? color : '';
+    opts = opts || { };
+
+    // If input is already a tinycolor, return itself
+    if (color instanceof tinycolor) {
+       return color;
+    }
+    // If we are called as a function, call using new instead
+    if (!(this instanceof tinycolor)) {
+        return new tinycolor(color, opts);
+    }
+
+    var rgb = inputToRGB(color);
+    this._originalInput = color,
+    this._r = rgb.r,
+    this._g = rgb.g,
+    this._b = rgb.b,
+    this._a = rgb.a,
+    this._roundA = mathRound(100*this._a) / 100,
+    this._format = opts.format || rgb.format;
+    this._gradientType = opts.gradientType;
+
+    // Don't let the range of [0,255] come back in [0,1].
+    // Potentially lose a little bit of precision here, but will fix issues where
+    // .5 gets interpreted as half of the total, instead of half of 1
+    // If it was supposed to be 128, this was already taken care of by `inputToRgb`
+    if (this._r < 1) { this._r = mathRound(this._r); }
+    if (this._g < 1) { this._g = mathRound(this._g); }
+    if (this._b < 1) { this._b = mathRound(this._b); }
+
+    this._ok = rgb.ok;
+    this._tc_id = tinyCounter++;
+}
+
+tinycolor.prototype = {
+    isDark: function() {
+        return this.getBrightness() < 128;
+    },
+    isLight: function() {
+        return !this.isDark();
+    },
+    isValid: function() {
+        return this._ok;
+    },
+    getOriginalInput: function() {
+      return this._originalInput;
+    },
+    getFormat: function() {
+        return this._format;
+    },
+    getAlpha: function() {
+        return this._a;
+    },
+    getBrightness: function() {
+        //http://www.w3.org/TR/AERT#color-contrast
+        var rgb = this.toRgb();
+        return (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+    },
+    getLuminance: function() {
+        //http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+        var rgb = this.toRgb();
+        var RsRGB, GsRGB, BsRGB, R, G, B;
+        RsRGB = rgb.r/255;
+        GsRGB = rgb.g/255;
+        BsRGB = rgb.b/255;
+
+        if (RsRGB <= 0.03928) {R = RsRGB / 12.92;} else {R = Math.pow(((RsRGB + 0.055) / 1.055), 2.4);}
+        if (GsRGB <= 0.03928) {G = GsRGB / 12.92;} else {G = Math.pow(((GsRGB + 0.055) / 1.055), 2.4);}
+        if (BsRGB <= 0.03928) {B = BsRGB / 12.92;} else {B = Math.pow(((BsRGB + 0.055) / 1.055), 2.4);}
+        return (0.2126 * R) + (0.7152 * G) + (0.0722 * B);
+    },
+    setAlpha: function(value) {
+        this._a = boundAlpha(value);
+        this._roundA = mathRound(100*this._a) / 100;
+        return this;
+    },
+    toHsv: function() {
+        var hsv = rgbToHsv(this._r, this._g, this._b);
+        return { h: hsv.h * 360, s: hsv.s, v: hsv.v, a: this._a };
+    },
+    toHsvString: function() {
+        var hsv = rgbToHsv(this._r, this._g, this._b);
+        var h = mathRound(hsv.h * 360), s = mathRound(hsv.s * 100), v = mathRound(hsv.v * 100);
+        return (this._a == 1) ?
+          "hsv("  + h + ", " + s + "%, " + v + "%)" :
+          "hsva(" + h + ", " + s + "%, " + v + "%, "+ this._roundA + ")";
+    },
+    toHsl: function() {
+        var hsl = rgbToHsl(this._r, this._g, this._b);
+        return { h: hsl.h * 360, s: hsl.s, l: hsl.l, a: this._a };
+    },
+    toHslString: function() {
+        var hsl = rgbToHsl(this._r, this._g, this._b);
+        var h = mathRound(hsl.h * 360), s = mathRound(hsl.s * 100), l = mathRound(hsl.l * 100);
+        return (this._a == 1) ?
+          "hsl("  + h + ", " + s + "%, " + l + "%)" :
+          "hsla(" + h + ", " + s + "%, " + l + "%, "+ this._roundA + ")";
+    },
+    toHex: function(allow3Char) {
+        return rgbToHex(this._r, this._g, this._b, allow3Char);
+    },
+    toHexString: function(allow3Char) {
+        return '#' + this.toHex(allow3Char);
+    },
+    toHex8: function(allow4Char) {
+        return rgbaToHex(this._r, this._g, this._b, this._a, allow4Char);
+    },
+    toHex8String: function(allow4Char) {
+        return '#' + this.toHex8(allow4Char);
+    },
+    toRgb: function() {
+        return { r: mathRound(this._r), g: mathRound(this._g), b: mathRound(this._b), a: this._a };
+    },
+    toRgbString: function() {
+        return (this._a == 1) ?
+          "rgb("  + mathRound(this._r) + ", " + mathRound(this._g) + ", " + mathRound(this._b) + ")" :
+          "rgba(" + mathRound(this._r) + ", " + mathRound(this._g) + ", " + mathRound(this._b) + ", " + this._roundA + ")";
+    },
+    toPercentageRgb: function() {
+        return { r: mathRound(bound01(this._r, 255) * 100) + "%", g: mathRound(bound01(this._g, 255) * 100) + "%", b: mathRound(bound01(this._b, 255) * 100) + "%", a: this._a };
+    },
+    toPercentageRgbString: function() {
+        return (this._a == 1) ?
+          "rgb("  + mathRound(bound01(this._r, 255) * 100) + "%, " + mathRound(bound01(this._g, 255) * 100) + "%, " + mathRound(bound01(this._b, 255) * 100) + "%)" :
+          "rgba(" + mathRound(bound01(this._r, 255) * 100) + "%, " + mathRound(bound01(this._g, 255) * 100) + "%, " + mathRound(bound01(this._b, 255) * 100) + "%, " + this._roundA + ")";
+    },
+    toName: function() {
+        if (this._a === 0) {
+            return "transparent";
+        }
+
+        if (this._a < 1) {
+            return false;
+        }
+
+        return hexNames[rgbToHex(this._r, this._g, this._b, true)] || false;
+    },
+    toFilter: function(secondColor) {
+        var hex8String = '#' + rgbaToArgbHex(this._r, this._g, this._b, this._a);
+        var secondHex8String = hex8String;
+        var gradientType = this._gradientType ? "GradientType = 1, " : "";
+
+        if (secondColor) {
+            var s = tinycolor(secondColor);
+            secondHex8String = '#' + rgbaToArgbHex(s._r, s._g, s._b, s._a);
+        }
+
+        return "progid:DXImageTransform.Microsoft.gradient("+gradientType+"startColorstr="+hex8String+",endColorstr="+secondHex8String+")";
+    },
+    toString: function(format) {
+        var formatSet = !!format;
+        format = format || this._format;
+
+        var formattedString = false;
+        var hasAlpha = this._a < 1 && this._a >= 0;
+        var needsAlphaFormat = !formatSet && hasAlpha && (format === "hex" || format === "hex6" || format === "hex3" || format === "hex4" || format === "hex8" || format === "name");
+
+        if (needsAlphaFormat) {
+            // Special case for "transparent", all other non-alpha formats
+            // will return rgba when there is transparency.
+            if (format === "name" && this._a === 0) {
+                return this.toName();
+            }
+            return this.toRgbString();
+        }
+        if (format === "rgb") {
+            formattedString = this.toRgbString();
+        }
+        if (format === "prgb") {
+            formattedString = this.toPercentageRgbString();
+        }
+        if (format === "hex" || format === "hex6") {
+            formattedString = this.toHexString();
+        }
+        if (format === "hex3") {
+            formattedString = this.toHexString(true);
+        }
+        if (format === "hex4") {
+            formattedString = this.toHex8String(true);
+        }
+        if (format === "hex8") {
+            formattedString = this.toHex8String();
+        }
+        if (format === "name") {
+            formattedString = this.toName();
+        }
+        if (format === "hsl") {
+            formattedString = this.toHslString();
+        }
+        if (format === "hsv") {
+            formattedString = this.toHsvString();
+        }
+
+        return formattedString || this.toHexString();
+    },
+    clone: function() {
+        return tinycolor(this.toString());
+    },
+
+    _applyModification: function(fn, args) {
+        var color = fn.apply(null, [this].concat([].slice.call(args)));
+        this._r = color._r;
+        this._g = color._g;
+        this._b = color._b;
+        this.setAlpha(color._a);
+        return this;
+    },
+    lighten: function() {
+        return this._applyModification(lighten, arguments);
+    },
+    brighten: function() {
+        return this._applyModification(brighten, arguments);
+    },
+    darken: function() {
+        return this._applyModification(darken, arguments);
+    },
+    desaturate: function() {
+        return this._applyModification(desaturate, arguments);
+    },
+    saturate: function() {
+        return this._applyModification(saturate, arguments);
+    },
+    greyscale: function() {
+        return this._applyModification(greyscale, arguments);
+    },
+    spin: function() {
+        return this._applyModification(spin, arguments);
+    },
+
+    _applyCombination: function(fn, args) {
+        return fn.apply(null, [this].concat([].slice.call(args)));
+    },
+    analogous: function() {
+        return this._applyCombination(analogous, arguments);
+    },
+    complement: function() {
+        return this._applyCombination(complement, arguments);
+    },
+    monochromatic: function() {
+        return this._applyCombination(monochromatic, arguments);
+    },
+    splitcomplement: function() {
+        return this._applyCombination(splitcomplement, arguments);
+    },
+    triad: function() {
+        return this._applyCombination(triad, arguments);
+    },
+    tetrad: function() {
+        return this._applyCombination(tetrad, arguments);
+    }
+};
+
+// If input is an object, force 1 into "1.0" to handle ratios properly
+// String input requires "1.0" as input, so 1 will be treated as 1
+tinycolor.fromRatio = function(color, opts) {
+    if (typeof color == "object") {
+        var newColor = {};
+        for (var i in color) {
+            if (color.hasOwnProperty(i)) {
+                if (i === "a") {
+                    newColor[i] = color[i];
+                }
+                else {
+                    newColor[i] = convertToPercentage(color[i]);
+                }
+            }
+        }
+        color = newColor;
+    }
+
+    return tinycolor(color, opts);
+};
+
+// Given a string or object, convert that input to RGB
+// Possible string inputs:
+//
+//     "red"
+//     "#f00" or "f00"
+//     "#ff0000" or "ff0000"
+//     "#ff000000" or "ff000000"
+//     "rgb 255 0 0" or "rgb (255, 0, 0)"
+//     "rgb 1.0 0 0" or "rgb (1, 0, 0)"
+//     "rgba (255, 0, 0, 1)" or "rgba 255, 0, 0, 1"
+//     "rgba (1.0, 0, 0, 1)" or "rgba 1.0, 0, 0, 1"
+//     "hsl(0, 100%, 50%)" or "hsl 0 100% 50%"
+//     "hsla(0, 100%, 50%, 1)" or "hsla 0 100% 50%, 1"
+//     "hsv(0, 100%, 100%)" or "hsv 0 100% 100%"
+//
+function inputToRGB(color) {
+
+    var rgb = { r: 0, g: 0, b: 0 };
+    var a = 1;
+    var s = null;
+    var v = null;
+    var l = null;
+    var ok = false;
+    var format = false;
+
+    if (typeof color == "string") {
+        color = stringInputToObject(color);
+    }
+
+    if (typeof color == "object") {
+        if (isValidCSSUnit(color.r) && isValidCSSUnit(color.g) && isValidCSSUnit(color.b)) {
+            rgb = rgbToRgb(color.r, color.g, color.b);
+            ok = true;
+            format = String(color.r).substr(-1) === "%" ? "prgb" : "rgb";
+        }
+        else if (isValidCSSUnit(color.h) && isValidCSSUnit(color.s) && isValidCSSUnit(color.v)) {
+            s = convertToPercentage(color.s);
+            v = convertToPercentage(color.v);
+            rgb = hsvToRgb(color.h, s, v);
+            ok = true;
+            format = "hsv";
+        }
+        else if (isValidCSSUnit(color.h) && isValidCSSUnit(color.s) && isValidCSSUnit(color.l)) {
+            s = convertToPercentage(color.s);
+            l = convertToPercentage(color.l);
+            rgb = hslToRgb(color.h, s, l);
+            ok = true;
+            format = "hsl";
+        }
+
+        if (color.hasOwnProperty("a")) {
+            a = color.a;
+        }
+    }
+
+    a = boundAlpha(a);
+
+    return {
+        ok: ok,
+        format: color.format || format,
+        r: mathMin(255, mathMax(rgb.r, 0)),
+        g: mathMin(255, mathMax(rgb.g, 0)),
+        b: mathMin(255, mathMax(rgb.b, 0)),
+        a: a
+    };
+}
+
+
+// Conversion Functions
+// --------------------
+
+// `rgbToHsl`, `rgbToHsv`, `hslToRgb`, `hsvToRgb` modified from:
+// <http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript>
+
+// `rgbToRgb`
+// Handle bounds / percentage checking to conform to CSS color spec
+// <http://www.w3.org/TR/css3-color/>
+// *Assumes:* r, g, b in [0, 255] or [0, 1]
+// *Returns:* { r, g, b } in [0, 255]
+function rgbToRgb(r, g, b){
+    return {
+        r: bound01(r, 255) * 255,
+        g: bound01(g, 255) * 255,
+        b: bound01(b, 255) * 255
+    };
+}
+
+// `rgbToHsl`
+// Converts an RGB color value to HSL.
+// *Assumes:* r, g, and b are contained in [0, 255] or [0, 1]
+// *Returns:* { h, s, l } in [0,1]
+function rgbToHsl(r, g, b) {
+
+    r = bound01(r, 255);
+    g = bound01(g, 255);
+    b = bound01(b, 255);
+
+    var max = mathMax(r, g, b), min = mathMin(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if(max == min) {
+        h = s = 0; // achromatic
+    }
+    else {
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+
+        h /= 6;
+    }
+
+    return { h: h, s: s, l: l };
+}
+
+// `hslToRgb`
+// Converts an HSL color value to RGB.
+// *Assumes:* h is contained in [0, 1] or [0, 360] and s and l are contained [0, 1] or [0, 100]
+// *Returns:* { r, g, b } in the set [0, 255]
+function hslToRgb(h, s, l) {
+    var r, g, b;
+
+    h = bound01(h, 360);
+    s = bound01(s, 100);
+    l = bound01(l, 100);
+
+    function hue2rgb(p, q, t) {
+        if(t < 0) t += 1;
+        if(t > 1) t -= 1;
+        if(t < 1/6) return p + (q - p) * 6 * t;
+        if(t < 1/2) return q;
+        if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+    }
+
+    if(s === 0) {
+        r = g = b = l; // achromatic
+    }
+    else {
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return { r: r * 255, g: g * 255, b: b * 255 };
+}
+
+// `rgbToHsv`
+// Converts an RGB color value to HSV
+// *Assumes:* r, g, and b are contained in the set [0, 255] or [0, 1]
+// *Returns:* { h, s, v } in [0,1]
+function rgbToHsv(r, g, b) {
+
+    r = bound01(r, 255);
+    g = bound01(g, 255);
+    b = bound01(b, 255);
+
+    var max = mathMax(r, g, b), min = mathMin(r, g, b);
+    var h, s, v = max;
+
+    var d = max - min;
+    s = max === 0 ? 0 : d / max;
+
+    if(max == min) {
+        h = 0; // achromatic
+    }
+    else {
+        switch(max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    return { h: h, s: s, v: v };
+}
+
+// `hsvToRgb`
+// Converts an HSV color value to RGB.
+// *Assumes:* h is contained in [0, 1] or [0, 360] and s and v are contained in [0, 1] or [0, 100]
+// *Returns:* { r, g, b } in the set [0, 255]
+ function hsvToRgb(h, s, v) {
+
+    h = bound01(h, 360) * 6;
+    s = bound01(s, 100);
+    v = bound01(v, 100);
+
+    var i = Math.floor(h),
+        f = h - i,
+        p = v * (1 - s),
+        q = v * (1 - f * s),
+        t = v * (1 - (1 - f) * s),
+        mod = i % 6,
+        r = [v, q, p, p, t, v][mod],
+        g = [t, v, v, q, p, p][mod],
+        b = [p, p, t, v, v, q][mod];
+
+    return { r: r * 255, g: g * 255, b: b * 255 };
+}
+
+// `rgbToHex`
+// Converts an RGB color to hex
+// Assumes r, g, and b are contained in the set [0, 255]
+// Returns a 3 or 6 character hex
+function rgbToHex(r, g, b, allow3Char) {
+
+    var hex = [
+        pad2(mathRound(r).toString(16)),
+        pad2(mathRound(g).toString(16)),
+        pad2(mathRound(b).toString(16))
+    ];
+
+    // Return a 3 character hex if possible
+    if (allow3Char && hex[0].charAt(0) == hex[0].charAt(1) && hex[1].charAt(0) == hex[1].charAt(1) && hex[2].charAt(0) == hex[2].charAt(1)) {
+        return hex[0].charAt(0) + hex[1].charAt(0) + hex[2].charAt(0);
+    }
+
+    return hex.join("");
+}
+
+// `rgbaToHex`
+// Converts an RGBA color plus alpha transparency to hex
+// Assumes r, g, b are contained in the set [0, 255] and
+// a in [0, 1]. Returns a 4 or 8 character rgba hex
+function rgbaToHex(r, g, b, a, allow4Char) {
+
+    var hex = [
+        pad2(mathRound(r).toString(16)),
+        pad2(mathRound(g).toString(16)),
+        pad2(mathRound(b).toString(16)),
+        pad2(convertDecimalToHex(a))
+    ];
+
+    // Return a 4 character hex if possible
+    if (allow4Char && hex[0].charAt(0) == hex[0].charAt(1) && hex[1].charAt(0) == hex[1].charAt(1) && hex[2].charAt(0) == hex[2].charAt(1) && hex[3].charAt(0) == hex[3].charAt(1)) {
+        return hex[0].charAt(0) + hex[1].charAt(0) + hex[2].charAt(0) + hex[3].charAt(0);
+    }
+
+    return hex.join("");
+}
+
+// `rgbaToArgbHex`
+// Converts an RGBA color to an ARGB Hex8 string
+// Rarely used, but required for "toFilter()"
+function rgbaToArgbHex(r, g, b, a) {
+
+    var hex = [
+        pad2(convertDecimalToHex(a)),
+        pad2(mathRound(r).toString(16)),
+        pad2(mathRound(g).toString(16)),
+        pad2(mathRound(b).toString(16))
+    ];
+
+    return hex.join("");
+}
+
+// `equals`
+// Can be called with any tinycolor input
+tinycolor.equals = function (color1, color2) {
+    if (!color1 || !color2) { return false; }
+    return tinycolor(color1).toRgbString() == tinycolor(color2).toRgbString();
+};
+
+tinycolor.random = function() {
+    return tinycolor.fromRatio({
+        r: mathRandom(),
+        g: mathRandom(),
+        b: mathRandom()
+    });
+};
+
+
+// Modification Functions
+// ----------------------
+// Thanks to less.js for some of the basics here
+// <https://github.com/cloudhead/less.js/blob/master/lib/less/functions.js>
+
+function desaturate(color, amount) {
+    amount = (amount === 0) ? 0 : (amount || 10);
+    var hsl = tinycolor(color).toHsl();
+    hsl.s -= amount / 100;
+    hsl.s = clamp01(hsl.s);
+    return tinycolor(hsl);
+}
+
+function saturate(color, amount) {
+    amount = (amount === 0) ? 0 : (amount || 10);
+    var hsl = tinycolor(color).toHsl();
+    hsl.s += amount / 100;
+    hsl.s = clamp01(hsl.s);
+    return tinycolor(hsl);
+}
+
+function greyscale(color) {
+    return tinycolor(color).desaturate(100);
+}
+
+function lighten (color, amount) {
+    amount = (amount === 0) ? 0 : (amount || 10);
+    var hsl = tinycolor(color).toHsl();
+    hsl.l += amount / 100;
+    hsl.l = clamp01(hsl.l);
+    return tinycolor(hsl);
+}
+
+function brighten(color, amount) {
+    amount = (amount === 0) ? 0 : (amount || 10);
+    var rgb = tinycolor(color).toRgb();
+    rgb.r = mathMax(0, mathMin(255, rgb.r - mathRound(255 * - (amount / 100))));
+    rgb.g = mathMax(0, mathMin(255, rgb.g - mathRound(255 * - (amount / 100))));
+    rgb.b = mathMax(0, mathMin(255, rgb.b - mathRound(255 * - (amount / 100))));
+    return tinycolor(rgb);
+}
+
+function darken (color, amount) {
+    amount = (amount === 0) ? 0 : (amount || 10);
+    var hsl = tinycolor(color).toHsl();
+    hsl.l -= amount / 100;
+    hsl.l = clamp01(hsl.l);
+    return tinycolor(hsl);
+}
+
+// Spin takes a positive or negative amount within [-360, 360] indicating the change of hue.
+// Values outside of this range will be wrapped into this range.
+function spin(color, amount) {
+    var hsl = tinycolor(color).toHsl();
+    var hue = (hsl.h + amount) % 360;
+    hsl.h = hue < 0 ? 360 + hue : hue;
+    return tinycolor(hsl);
+}
+
+// Combination Functions
+// ---------------------
+// Thanks to jQuery xColor for some of the ideas behind these
+// <https://github.com/infusion/jQuery-xcolor/blob/master/jquery.xcolor.js>
+
+function complement(color) {
+    var hsl = tinycolor(color).toHsl();
+    hsl.h = (hsl.h + 180) % 360;
+    return tinycolor(hsl);
+}
+
+function triad(color) {
+    var hsl = tinycolor(color).toHsl();
+    var h = hsl.h;
+    return [
+        tinycolor(color),
+        tinycolor({ h: (h + 120) % 360, s: hsl.s, l: hsl.l }),
+        tinycolor({ h: (h + 240) % 360, s: hsl.s, l: hsl.l })
+    ];
+}
+
+function tetrad(color) {
+    var hsl = tinycolor(color).toHsl();
+    var h = hsl.h;
+    return [
+        tinycolor(color),
+        tinycolor({ h: (h + 90) % 360, s: hsl.s, l: hsl.l }),
+        tinycolor({ h: (h + 180) % 360, s: hsl.s, l: hsl.l }),
+        tinycolor({ h: (h + 270) % 360, s: hsl.s, l: hsl.l })
+    ];
+}
+
+function splitcomplement(color) {
+    var hsl = tinycolor(color).toHsl();
+    var h = hsl.h;
+    return [
+        tinycolor(color),
+        tinycolor({ h: (h + 72) % 360, s: hsl.s, l: hsl.l}),
+        tinycolor({ h: (h + 216) % 360, s: hsl.s, l: hsl.l})
+    ];
+}
+
+function analogous(color, results, slices) {
+    results = results || 6;
+    slices = slices || 30;
+
+    var hsl = tinycolor(color).toHsl();
+    var part = 360 / slices;
+    var ret = [tinycolor(color)];
+
+    for (hsl.h = ((hsl.h - (part * results >> 1)) + 720) % 360; --results; ) {
+        hsl.h = (hsl.h + part) % 360;
+        ret.push(tinycolor(hsl));
+    }
+    return ret;
+}
+
+function monochromatic(color, results) {
+    results = results || 6;
+    var hsv = tinycolor(color).toHsv();
+    var h = hsv.h, s = hsv.s, v = hsv.v;
+    var ret = [];
+    var modification = 1 / results;
+
+    while (results--) {
+        ret.push(tinycolor({ h: h, s: s, v: v}));
+        v = (v + modification) % 1;
+    }
+
+    return ret;
+}
+
+// Utility Functions
+// ---------------------
+
+tinycolor.mix = function(color1, color2, amount) {
+    amount = (amount === 0) ? 0 : (amount || 50);
+
+    var rgb1 = tinycolor(color1).toRgb();
+    var rgb2 = tinycolor(color2).toRgb();
+
+    var p = amount / 100;
+
+    var rgba = {
+        r: ((rgb2.r - rgb1.r) * p) + rgb1.r,
+        g: ((rgb2.g - rgb1.g) * p) + rgb1.g,
+        b: ((rgb2.b - rgb1.b) * p) + rgb1.b,
+        a: ((rgb2.a - rgb1.a) * p) + rgb1.a
+    };
+
+    return tinycolor(rgba);
+};
+
+
+// Readability Functions
+// ---------------------
+// <http://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef (WCAG Version 2)
+
+// `contrast`
+// Analyze the 2 colors and returns the color contrast defined by (WCAG Version 2)
+tinycolor.readability = function(color1, color2) {
+    var c1 = tinycolor(color1);
+    var c2 = tinycolor(color2);
+    return (Math.max(c1.getLuminance(),c2.getLuminance())+0.05) / (Math.min(c1.getLuminance(),c2.getLuminance())+0.05);
+};
+
+// `isReadable`
+// Ensure that foreground and background color combinations meet WCAG2 guidelines.
+// The third argument is an optional Object.
+//      the 'level' property states 'AA' or 'AAA' - if missing or invalid, it defaults to 'AA';
+//      the 'size' property states 'large' or 'small' - if missing or invalid, it defaults to 'small'.
+// If the entire object is absent, isReadable defaults to {level:"AA",size:"small"}.
+
+// *Example*
+//    tinycolor.isReadable("#000", "#111") => false
+//    tinycolor.isReadable("#000", "#111",{level:"AA",size:"large"}) => false
+tinycolor.isReadable = function(color1, color2, wcag2) {
+    var readability = tinycolor.readability(color1, color2);
+    var wcag2Parms, out;
+
+    out = false;
+
+    wcag2Parms = validateWCAG2Parms(wcag2);
+    switch (wcag2Parms.level + wcag2Parms.size) {
+        case "AAsmall":
+        case "AAAlarge":
+            out = readability >= 4.5;
+            break;
+        case "AAlarge":
+            out = readability >= 3;
+            break;
+        case "AAAsmall":
+            out = readability >= 7;
+            break;
+    }
+    return out;
+
+};
+
+// `mostReadable`
+// Given a base color and a list of possible foreground or background
+// colors for that base, returns the most readable color.
+// Optionally returns Black or White if the most readable color is unreadable.
+// *Example*
+//    tinycolor.mostReadable(tinycolor.mostReadable("#123", ["#124", "#125"],{includeFallbackColors:false}).toHexString(); // "#112255"
+//    tinycolor.mostReadable(tinycolor.mostReadable("#123", ["#124", "#125"],{includeFallbackColors:true}).toHexString();  // "#ffffff"
+//    tinycolor.mostReadable("#a8015a", ["#faf3f3"],{includeFallbackColors:true,level:"AAA",size:"large"}).toHexString(); // "#faf3f3"
+//    tinycolor.mostReadable("#a8015a", ["#faf3f3"],{includeFallbackColors:true,level:"AAA",size:"small"}).toHexString(); // "#ffffff"
+tinycolor.mostReadable = function(baseColor, colorList, args) {
+    var bestColor = null;
+    var bestScore = 0;
+    var readability;
+    var includeFallbackColors, level, size ;
+    args = args || {};
+    includeFallbackColors = args.includeFallbackColors ;
+    level = args.level;
+    size = args.size;
+
+    for (var i= 0; i < colorList.length ; i++) {
+        readability = tinycolor.readability(baseColor, colorList[i]);
+        if (readability > bestScore) {
+            bestScore = readability;
+            bestColor = tinycolor(colorList[i]);
+        }
+    }
+
+    if (tinycolor.isReadable(baseColor, bestColor, {"level":level,"size":size}) || !includeFallbackColors) {
+        return bestColor;
+    }
+    else {
+        args.includeFallbackColors=false;
+        return tinycolor.mostReadable(baseColor,["#fff", "#000"],args);
+    }
+};
+
+
+// Big List of Colors
+// ------------------
+// <http://www.w3.org/TR/css3-color/#svg-color>
+var names = tinycolor.names = {
+    aliceblue: "f0f8ff",
+    antiquewhite: "faebd7",
+    aqua: "0ff",
+    aquamarine: "7fffd4",
+    azure: "f0ffff",
+    beige: "f5f5dc",
+    bisque: "ffe4c4",
+    black: "000",
+    blanchedalmond: "ffebcd",
+    blue: "00f",
+    blueviolet: "8a2be2",
+    brown: "a52a2a",
+    burlywood: "deb887",
+    burntsienna: "ea7e5d",
+    cadetblue: "5f9ea0",
+    chartreuse: "7fff00",
+    chocolate: "d2691e",
+    coral: "ff7f50",
+    cornflowerblue: "6495ed",
+    cornsilk: "fff8dc",
+    crimson: "dc143c",
+    cyan: "0ff",
+    darkblue: "00008b",
+    darkcyan: "008b8b",
+    darkgoldenrod: "b8860b",
+    darkgray: "a9a9a9",
+    darkgreen: "006400",
+    darkgrey: "a9a9a9",
+    darkkhaki: "bdb76b",
+    darkmagenta: "8b008b",
+    darkolivegreen: "556b2f",
+    darkorange: "ff8c00",
+    darkorchid: "9932cc",
+    darkred: "8b0000",
+    darksalmon: "e9967a",
+    darkseagreen: "8fbc8f",
+    darkslateblue: "483d8b",
+    darkslategray: "2f4f4f",
+    darkslategrey: "2f4f4f",
+    darkturquoise: "00ced1",
+    darkviolet: "9400d3",
+    deeppink: "ff1493",
+    deepskyblue: "00bfff",
+    dimgray: "696969",
+    dimgrey: "696969",
+    dodgerblue: "1e90ff",
+    firebrick: "b22222",
+    floralwhite: "fffaf0",
+    forestgreen: "228b22",
+    fuchsia: "f0f",
+    gainsboro: "dcdcdc",
+    ghostwhite: "f8f8ff",
+    gold: "ffd700",
+    goldenrod: "daa520",
+    gray: "808080",
+    green: "008000",
+    greenyellow: "adff2f",
+    grey: "808080",
+    honeydew: "f0fff0",
+    hotpink: "ff69b4",
+    indianred: "cd5c5c",
+    indigo: "4b0082",
+    ivory: "fffff0",
+    khaki: "f0e68c",
+    lavender: "e6e6fa",
+    lavenderblush: "fff0f5",
+    lawngreen: "7cfc00",
+    lemonchiffon: "fffacd",
+    lightblue: "add8e6",
+    lightcoral: "f08080",
+    lightcyan: "e0ffff",
+    lightgoldenrodyellow: "fafad2",
+    lightgray: "d3d3d3",
+    lightgreen: "90ee90",
+    lightgrey: "d3d3d3",
+    lightpink: "ffb6c1",
+    lightsalmon: "ffa07a",
+    lightseagreen: "20b2aa",
+    lightskyblue: "87cefa",
+    lightslategray: "789",
+    lightslategrey: "789",
+    lightsteelblue: "b0c4de",
+    lightyellow: "ffffe0",
+    lime: "0f0",
+    limegreen: "32cd32",
+    linen: "faf0e6",
+    magenta: "f0f",
+    maroon: "800000",
+    mediumaquamarine: "66cdaa",
+    mediumblue: "0000cd",
+    mediumorchid: "ba55d3",
+    mediumpurple: "9370db",
+    mediumseagreen: "3cb371",
+    mediumslateblue: "7b68ee",
+    mediumspringgreen: "00fa9a",
+    mediumturquoise: "48d1cc",
+    mediumvioletred: "c71585",
+    midnightblue: "191970",
+    mintcream: "f5fffa",
+    mistyrose: "ffe4e1",
+    moccasin: "ffe4b5",
+    navajowhite: "ffdead",
+    navy: "000080",
+    oldlace: "fdf5e6",
+    olive: "808000",
+    olivedrab: "6b8e23",
+    orange: "ffa500",
+    orangered: "ff4500",
+    orchid: "da70d6",
+    palegoldenrod: "eee8aa",
+    palegreen: "98fb98",
+    paleturquoise: "afeeee",
+    palevioletred: "db7093",
+    papayawhip: "ffefd5",
+    peachpuff: "ffdab9",
+    peru: "cd853f",
+    pink: "ffc0cb",
+    plum: "dda0dd",
+    powderblue: "b0e0e6",
+    purple: "800080",
+    rebeccapurple: "663399",
+    red: "f00",
+    rosybrown: "bc8f8f",
+    royalblue: "4169e1",
+    saddlebrown: "8b4513",
+    salmon: "fa8072",
+    sandybrown: "f4a460",
+    seagreen: "2e8b57",
+    seashell: "fff5ee",
+    sienna: "a0522d",
+    silver: "c0c0c0",
+    skyblue: "87ceeb",
+    slateblue: "6a5acd",
+    slategray: "708090",
+    slategrey: "708090",
+    snow: "fffafa",
+    springgreen: "00ff7f",
+    steelblue: "4682b4",
+    tan: "d2b48c",
+    teal: "008080",
+    thistle: "d8bfd8",
+    tomato: "ff6347",
+    turquoise: "40e0d0",
+    violet: "ee82ee",
+    wheat: "f5deb3",
+    white: "fff",
+    whitesmoke: "f5f5f5",
+    yellow: "ff0",
+    yellowgreen: "9acd32"
+};
+
+// Make it easy to access colors via `hexNames[hex]`
+var hexNames = tinycolor.hexNames = flip(names);
+
+
+// Utilities
+// ---------
+
+// `{ 'name1': 'val1' }` becomes `{ 'val1': 'name1' }`
+function flip(o) {
+    var flipped = { };
+    for (var i in o) {
+        if (o.hasOwnProperty(i)) {
+            flipped[o[i]] = i;
+        }
+    }
+    return flipped;
+}
+
+// Return a valid alpha value [0,1] with all invalid values being set to 1
+function boundAlpha(a) {
+    a = parseFloat(a);
+
+    if (isNaN(a) || a < 0 || a > 1) {
+        a = 1;
+    }
+
+    return a;
+}
+
+// Take input from [0, n] and return it as [0, 1]
+function bound01(n, max) {
+    if (isOnePointZero(n)) { n = "100%"; }
+
+    var processPercent = isPercentage(n);
+    n = mathMin(max, mathMax(0, parseFloat(n)));
+
+    // Automatically convert percentage into number
+    if (processPercent) {
+        n = parseInt(n * max, 10) / 100;
+    }
+
+    // Handle floating point rounding errors
+    if ((Math.abs(n - max) < 0.000001)) {
+        return 1;
+    }
+
+    // Convert into [0, 1] range if it isn't already
+    return (n % max) / parseFloat(max);
+}
+
+// Force a number between 0 and 1
+function clamp01(val) {
+    return mathMin(1, mathMax(0, val));
+}
+
+// Parse a base-16 hex value into a base-10 integer
+function parseIntFromHex(val) {
+    return parseInt(val, 16);
+}
+
+// Need to handle 1.0 as 100%, since once it is a number, there is no difference between it and 1
+// <http://stackoverflow.com/questions/7422072/javascript-how-to-detect-number-as-a-decimal-including-1-0>
+function isOnePointZero(n) {
+    return typeof n == "string" && n.indexOf('.') != -1 && parseFloat(n) === 1;
+}
+
+// Check to see if string passed in is a percentage
+function isPercentage(n) {
+    return typeof n === "string" && n.indexOf('%') != -1;
+}
+
+// Force a hex value to have 2 characters
+function pad2(c) {
+    return c.length == 1 ? '0' + c : '' + c;
+}
+
+// Replace a decimal with it's percentage value
+function convertToPercentage(n) {
+    if (n <= 1) {
+        n = (n * 100) + "%";
+    }
+
+    return n;
+}
+
+// Converts a decimal to a hex value
+function convertDecimalToHex(d) {
+    return Math.round(parseFloat(d) * 255).toString(16);
+}
+// Converts a hex value to a decimal
+function convertHexToDecimal(h) {
+    return (parseIntFromHex(h) / 255);
+}
+
+var matchers = (function() {
+
+    // <http://www.w3.org/TR/css3-values/#integers>
+    var CSS_INTEGER = "[-\\+]?\\d+%?";
+
+    // <http://www.w3.org/TR/css3-values/#number-value>
+    var CSS_NUMBER = "[-\\+]?\\d*\\.\\d+%?";
+
+    // Allow positive/negative integer/number.  Don't capture the either/or, just the entire outcome.
+    var CSS_UNIT = "(?:" + CSS_NUMBER + ")|(?:" + CSS_INTEGER + ")";
+
+    // Actual matching.
+    // Parentheses and commas are optional, but not required.
+    // Whitespace can take the place of commas or opening paren
+    var PERMISSIVE_MATCH3 = "[\\s|\\(]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")\\s*\\)?";
+    var PERMISSIVE_MATCH4 = "[\\s|\\(]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")\\s*\\)?";
+
+    return {
+        CSS_UNIT: new RegExp(CSS_UNIT),
+        rgb: new RegExp("rgb" + PERMISSIVE_MATCH3),
+        rgba: new RegExp("rgba" + PERMISSIVE_MATCH4),
+        hsl: new RegExp("hsl" + PERMISSIVE_MATCH3),
+        hsla: new RegExp("hsla" + PERMISSIVE_MATCH4),
+        hsv: new RegExp("hsv" + PERMISSIVE_MATCH3),
+        hsva: new RegExp("hsva" + PERMISSIVE_MATCH4),
+        hex3: /^#?([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/,
+        hex6: /^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/,
+        hex4: /^#?([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/,
+        hex8: /^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/
+    };
+})();
+
+// `isValidCSSUnit`
+// Take in a single string / number and check to see if it looks like a CSS unit
+// (see `matchers` above for definition).
+function isValidCSSUnit(color) {
+    return !!matchers.CSS_UNIT.exec(color);
+}
+
+// `stringInputToObject`
+// Permissive string parsing.  Take in a number of formats, and output an object
+// based on detected format.  Returns `{ r, g, b }` or `{ h, s, l }` or `{ h, s, v}`
+function stringInputToObject(color) {
+
+    color = color.replace(trimLeft,'').replace(trimRight, '').toLowerCase();
+    var named = false;
+    if (names[color]) {
+        color = names[color];
+        named = true;
+    }
+    else if (color == 'transparent') {
+        return { r: 0, g: 0, b: 0, a: 0, format: "name" };
+    }
+
+    // Try to match string input using regular expressions.
+    // Keep most of the number bounding out of this function - don't worry about [0,1] or [0,100] or [0,360]
+    // Just return an object and let the conversion functions handle that.
+    // This way the result will be the same whether the tinycolor is initialized with string or object.
+    var match;
+    if ((match = matchers.rgb.exec(color))) {
+        return { r: match[1], g: match[2], b: match[3] };
+    }
+    if ((match = matchers.rgba.exec(color))) {
+        return { r: match[1], g: match[2], b: match[3], a: match[4] };
+    }
+    if ((match = matchers.hsl.exec(color))) {
+        return { h: match[1], s: match[2], l: match[3] };
+    }
+    if ((match = matchers.hsla.exec(color))) {
+        return { h: match[1], s: match[2], l: match[3], a: match[4] };
+    }
+    if ((match = matchers.hsv.exec(color))) {
+        return { h: match[1], s: match[2], v: match[3] };
+    }
+    if ((match = matchers.hsva.exec(color))) {
+        return { h: match[1], s: match[2], v: match[3], a: match[4] };
+    }
+    if ((match = matchers.hex8.exec(color))) {
+        return {
+            r: parseIntFromHex(match[1]),
+            g: parseIntFromHex(match[2]),
+            b: parseIntFromHex(match[3]),
+            a: convertHexToDecimal(match[4]),
+            format: named ? "name" : "hex8"
+        };
+    }
+    if ((match = matchers.hex6.exec(color))) {
+        return {
+            r: parseIntFromHex(match[1]),
+            g: parseIntFromHex(match[2]),
+            b: parseIntFromHex(match[3]),
+            format: named ? "name" : "hex"
+        };
+    }
+    if ((match = matchers.hex4.exec(color))) {
+        return {
+            r: parseIntFromHex(match[1] + '' + match[1]),
+            g: parseIntFromHex(match[2] + '' + match[2]),
+            b: parseIntFromHex(match[3] + '' + match[3]),
+            a: convertHexToDecimal(match[4] + '' + match[4]),
+            format: named ? "name" : "hex8"
+        };
+    }
+    if ((match = matchers.hex3.exec(color))) {
+        return {
+            r: parseIntFromHex(match[1] + '' + match[1]),
+            g: parseIntFromHex(match[2] + '' + match[2]),
+            b: parseIntFromHex(match[3] + '' + match[3]),
+            format: named ? "name" : "hex"
+        };
+    }
+
+    return false;
+}
+
+function validateWCAG2Parms(parms) {
+    // return valid WCAG2 parms for isReadable.
+    // If input parms are invalid, return {"level":"AA", "size":"small"}
+    var level, size;
+    parms = parms || {"level":"AA", "size":"small"};
+    level = (parms.level || "AA").toUpperCase();
+    size = (parms.size || "small").toLowerCase();
+    if (level !== "AA" && level !== "AAA") {
+        level = "AA";
+    }
+    if (size !== "small" && size !== "large") {
+        size = "small";
+    }
+    return {"level":level, "size":size};
+}
+
+// Node: Export function
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = tinycolor;
+}
+// AMD/requirejs: Define the module
+else if (true) {
+    !(__WEBPACK_AMD_DEFINE_RESULT__ = (function () {return tinycolor;}).call(exports, __webpack_require__, exports, module),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+}
+// Browser: Expose to window
+else {
+    window.tinycolor = tinycolor;
+}
+
+})(Math);
+
+
+/***/ }),
+
+/***/ 13:
 /***/ (function(module, exports) {
 
 /*
@@ -11662,713 +12750,23 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports) {
 
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(18);
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = function bind(fn, thisArg) {
-  return function wrap() {
-    var args = new Array(arguments.length);
-    for (var i = 0; i < args.length; i++) {
-      args[i] = arguments[i];
-    }
-    return fn.apply(thisArg, args);
-  };
-};
-
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var utils = __webpack_require__(0);
-var settle = __webpack_require__(22);
-var buildURL = __webpack_require__(24);
-var parseHeaders = __webpack_require__(25);
-var isURLSameOrigin = __webpack_require__(26);
-var createError = __webpack_require__(10);
-var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(27);
-
-module.exports = function xhrAdapter(config) {
-  return new Promise(function dispatchXhrRequest(resolve, reject) {
-    var requestData = config.data;
-    var requestHeaders = config.headers;
-
-    if (utils.isFormData(requestData)) {
-      delete requestHeaders['Content-Type']; // Let the browser set it
-    }
-
-    var request = new XMLHttpRequest();
-    var loadEvent = 'onreadystatechange';
-    var xDomain = false;
-
-    // For IE 8/9 CORS support
-    // Only supports POST and GET calls and doesn't returns the response headers.
-    // DON'T do this for testing b/c XMLHttpRequest is mocked, not XDomainRequest.
-    if ("development" !== 'test' &&
-        typeof window !== 'undefined' &&
-        window.XDomainRequest && !('withCredentials' in request) &&
-        !isURLSameOrigin(config.url)) {
-      request = new window.XDomainRequest();
-      loadEvent = 'onload';
-      xDomain = true;
-      request.onprogress = function handleProgress() {};
-      request.ontimeout = function handleTimeout() {};
-    }
-
-    // HTTP basic authentication
-    if (config.auth) {
-      var username = config.auth.username || '';
-      var password = config.auth.password || '';
-      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
-    }
-
-    request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
-
-    // Set the request timeout in MS
-    request.timeout = config.timeout;
-
-    // Listen for ready state
-    request[loadEvent] = function handleLoad() {
-      if (!request || (request.readyState !== 4 && !xDomain)) {
-        return;
-      }
-
-      // The request errored out and we didn't get a response, this will be
-      // handled by onerror instead
-      // With one exception: request that using file: protocol, most browsers
-      // will return status as 0 even though it's a successful request
-      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
-        return;
-      }
-
-      // Prepare the response
-      var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
-      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
-      var response = {
-        data: responseData,
-        // IE sends 1223 instead of 204 (https://github.com/axios/axios/issues/201)
-        status: request.status === 1223 ? 204 : request.status,
-        statusText: request.status === 1223 ? 'No Content' : request.statusText,
-        headers: responseHeaders,
-        config: config,
-        request: request
-      };
-
-      settle(resolve, reject, response);
-
-      // Clean up request
-      request = null;
-    };
-
-    // Handle low level network errors
-    request.onerror = function handleError() {
-      // Real errors are hidden from us by the browser
-      // onerror should only fire if it's a network error
-      reject(createError('Network Error', config, null, request));
-
-      // Clean up request
-      request = null;
-    };
-
-    // Handle timeout
-    request.ontimeout = function handleTimeout() {
-      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED',
-        request));
-
-      // Clean up request
-      request = null;
-    };
-
-    // Add xsrf header
-    // This is only done if running in a standard browser environment.
-    // Specifically not if we're in a web worker, or react-native.
-    if (utils.isStandardBrowserEnv()) {
-      var cookies = __webpack_require__(28);
-
-      // Add xsrf header
-      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
-          cookies.read(config.xsrfCookieName) :
-          undefined;
-
-      if (xsrfValue) {
-        requestHeaders[config.xsrfHeaderName] = xsrfValue;
-      }
-    }
-
-    // Add headers to the request
-    if ('setRequestHeader' in request) {
-      utils.forEach(requestHeaders, function setRequestHeader(val, key) {
-        if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
-          // Remove Content-Type if data is undefined
-          delete requestHeaders[key];
-        } else {
-          // Otherwise add header to the request
-          request.setRequestHeader(key, val);
-        }
-      });
-    }
-
-    // Add withCredentials to request if needed
-    if (config.withCredentials) {
-      request.withCredentials = true;
-    }
-
-    // Add responseType to request if needed
-    if (config.responseType) {
-      try {
-        request.responseType = config.responseType;
-      } catch (e) {
-        // Expected DOMException thrown by browsers not compatible XMLHttpRequest Level 2.
-        // But, this can be suppressed for 'json' type as it can be parsed by default 'transformResponse' function.
-        if (config.responseType !== 'json') {
-          throw e;
-        }
-      }
-    }
-
-    // Handle progress if needed
-    if (typeof config.onDownloadProgress === 'function') {
-      request.addEventListener('progress', config.onDownloadProgress);
-    }
-
-    // Not all browsers support upload events
-    if (typeof config.onUploadProgress === 'function' && request.upload) {
-      request.upload.addEventListener('progress', config.onUploadProgress);
-    }
-
-    if (config.cancelToken) {
-      // Handle cancellation
-      config.cancelToken.promise.then(function onCanceled(cancel) {
-        if (!request) {
-          return;
-        }
-
-        request.abort();
-        reject(cancel);
-        // Clean up request
-        request = null;
-      });
-    }
-
-    if (requestData === undefined) {
-      requestData = null;
-    }
-
-    // Send the request
-    request.send(requestData);
-  });
-};
-
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var enhanceError = __webpack_require__(23);
-
-/**
- * Create an Error with the specified message, config, error code, request and response.
- *
- * @param {string} message The error message.
- * @param {Object} config The config.
- * @param {string} [code] The error code (for example, 'ECONNABORTED').
- * @param {Object} [request] The request.
- * @param {Object} [response] The response.
- * @returns {Error} The created error.
- */
-module.exports = function createError(message, config, code, request, response) {
-  var error = new Error(message);
-  return enhanceError(error, config, code, request, response);
-};
-
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = function isCancel(value) {
-  return !!(value && value.__CANCEL__);
-};
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/**
- * A `Cancel` is an object that is thrown when an operation is canceled.
- *
- * @class
- * @param {string=} message The message.
- */
-function Cancel(message) {
-  this.message = message;
-}
-
-Cancel.prototype.toString = function toString() {
-  return 'Cancel' + (this.message ? ': ' + this.message : '');
-};
-
-Cancel.prototype.__CANCEL__ = true;
-
-module.exports = Cancel;
-
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/*
-  MIT License http://www.opensource.org/licenses/mit-license.php
-  Author Tobias Koppers @sokra
-  Modified by Evan You @yyx990803
-*/
-
-var hasDocument = typeof document !== 'undefined'
-
-if (typeof DEBUG !== 'undefined' && DEBUG) {
-  if (!hasDocument) {
-    throw new Error(
-    'vue-style-loader cannot be used in a non-browser environment. ' +
-    "Use { target: 'node' } in your Webpack config to indicate a server-rendering environment."
-  ) }
-}
-
-var listToStyles = __webpack_require__(61)
-
-/*
-type StyleObject = {
-  id: number;
-  parts: Array<StyleObjectPart>
-}
-
-type StyleObjectPart = {
-  css: string;
-  media: string;
-  sourceMap: ?string
-}
-*/
-
-var stylesInDom = {/*
-  [id: number]: {
-    id: number,
-    refs: number,
-    parts: Array<(obj?: StyleObjectPart) => void>
-  }
-*/}
-
-var head = hasDocument && (document.head || document.getElementsByTagName('head')[0])
-var singletonElement = null
-var singletonCounter = 0
-var isProduction = false
-var noop = function () {}
-var options = null
-var ssrIdKey = 'data-vue-ssr-id'
-
-// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-// tags it will allow on a page
-var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\b/.test(navigator.userAgent.toLowerCase())
-
-module.exports = function (parentId, list, _isProduction, _options) {
-  isProduction = _isProduction
-
-  options = _options || {}
-
-  var styles = listToStyles(parentId, list)
-  addStylesToDom(styles)
-
-  return function update (newList) {
-    var mayRemove = []
-    for (var i = 0; i < styles.length; i++) {
-      var item = styles[i]
-      var domStyle = stylesInDom[item.id]
-      domStyle.refs--
-      mayRemove.push(domStyle)
-    }
-    if (newList) {
-      styles = listToStyles(parentId, newList)
-      addStylesToDom(styles)
-    } else {
-      styles = []
-    }
-    for (var i = 0; i < mayRemove.length; i++) {
-      var domStyle = mayRemove[i]
-      if (domStyle.refs === 0) {
-        for (var j = 0; j < domStyle.parts.length; j++) {
-          domStyle.parts[j]()
-        }
-        delete stylesInDom[domStyle.id]
-      }
-    }
-  }
-}
-
-function addStylesToDom (styles /* Array<StyleObject> */) {
-  for (var i = 0; i < styles.length; i++) {
-    var item = styles[i]
-    var domStyle = stylesInDom[item.id]
-    if (domStyle) {
-      domStyle.refs++
-      for (var j = 0; j < domStyle.parts.length; j++) {
-        domStyle.parts[j](item.parts[j])
-      }
-      for (; j < item.parts.length; j++) {
-        domStyle.parts.push(addStyle(item.parts[j]))
-      }
-      if (domStyle.parts.length > item.parts.length) {
-        domStyle.parts.length = item.parts.length
-      }
-    } else {
-      var parts = []
-      for (var j = 0; j < item.parts.length; j++) {
-        parts.push(addStyle(item.parts[j]))
-      }
-      stylesInDom[item.id] = { id: item.id, refs: 1, parts: parts }
-    }
-  }
-}
-
-function createStyleElement () {
-  var styleElement = document.createElement('style')
-  styleElement.type = 'text/css'
-  head.appendChild(styleElement)
-  return styleElement
-}
-
-function addStyle (obj /* StyleObjectPart */) {
-  var update, remove
-  var styleElement = document.querySelector('style[' + ssrIdKey + '~="' + obj.id + '"]')
-
-  if (styleElement) {
-    if (isProduction) {
-      // has SSR styles and in production mode.
-      // simply do nothing.
-      return noop
-    } else {
-      // has SSR styles but in dev mode.
-      // for some reason Chrome can't handle source map in server-rendered
-      // style tags - source maps in <style> only works if the style tag is
-      // created and inserted dynamically. So we remove the server rendered
-      // styles and inject new ones.
-      styleElement.parentNode.removeChild(styleElement)
-    }
-  }
-
-  if (isOldIE) {
-    // use singleton mode for IE9.
-    var styleIndex = singletonCounter++
-    styleElement = singletonElement || (singletonElement = createStyleElement())
-    update = applyToSingletonTag.bind(null, styleElement, styleIndex, false)
-    remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true)
-  } else {
-    // use multi-style-tag mode in all other cases
-    styleElement = createStyleElement()
-    update = applyToTag.bind(null, styleElement)
-    remove = function () {
-      styleElement.parentNode.removeChild(styleElement)
-    }
-  }
-
-  update(obj)
-
-  return function updateStyle (newObj /* StyleObjectPart */) {
-    if (newObj) {
-      if (newObj.css === obj.css &&
-          newObj.media === obj.media &&
-          newObj.sourceMap === obj.sourceMap) {
-        return
-      }
-      update(obj = newObj)
-    } else {
-      remove()
-    }
-  }
-}
-
-var replaceText = (function () {
-  var textStore = []
-
-  return function (index, replacement) {
-    textStore[index] = replacement
-    return textStore.filter(Boolean).join('\n')
-  }
-})()
-
-function applyToSingletonTag (styleElement, index, remove, obj) {
-  var css = remove ? '' : obj.css
-
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = replaceText(index, css)
-  } else {
-    var cssNode = document.createTextNode(css)
-    var childNodes = styleElement.childNodes
-    if (childNodes[index]) styleElement.removeChild(childNodes[index])
-    if (childNodes.length) {
-      styleElement.insertBefore(cssNode, childNodes[index])
-    } else {
-      styleElement.appendChild(cssNode)
-    }
-  }
-}
-
-function applyToTag (styleElement, obj) {
-  var css = obj.css
-  var media = obj.media
-  var sourceMap = obj.sourceMap
-
-  if (media) {
-    styleElement.setAttribute('media', media)
-  }
-  if (options.ssrId) {
-    styleElement.setAttribute(ssrIdKey, obj.id)
-  }
-
-  if (sourceMap) {
-    // https://developer.chrome.com/devtools/docs/javascript-debugging
-    // this makes source maps inside style tags work properly in Chrome
-    css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */'
-    // http://stackoverflow.com/a/26603875
-    css += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + ' */'
-  }
-
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = css
-  } else {
-    while (styleElement.firstChild) {
-      styleElement.removeChild(styleElement.firstChild)
-    }
-    styleElement.appendChild(document.createTextNode(css))
-  }
-}
-
-
-/***/ }),
-/* 14 */
+/***/ 14:
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(15);
-__webpack_require__(74);
-module.exports = __webpack_require__(75);
+__webpack_require__(55);
+module.exports = __webpack_require__(56);
 
 
 /***/ }),
-/* 15 */
+
+/***/ 15:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_axios__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_axios__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_vue_axios__);
@@ -12379,16 +12777,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_vuetify_es5_util_colors__ = __webpack_require__(42);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_vuetify_es5_util_colors___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_vuetify_es5_util_colors__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__appStore_js__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_App_vue__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_App_vue__ = __webpack_require__(47);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_App_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6__components_App_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__appRouter__ = __webpack_require__(51);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__appRouter__ = __webpack_require__(53);
 
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
  * building robust, powerful web applications using Vue and Laravel.
  */
-window.Vue = __webpack_require__(2);
+window.Vue = __webpack_require__(1);
 
 /**
  * Include Axois and VueAxois
@@ -12442,7 +12840,8 @@ var adminApp = new Vue({
 });
 
 /***/ }),
-/* 16 */
+
+/***/ 16:
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
@@ -12509,10 +12908,11 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
                          (typeof global !== "undefined" && global.clearImmediate) ||
                          (this && this.clearImmediate);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
-/* 17 */
+
+/***/ 17:
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -12702,17 +13102,18 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(6)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(6)))
 
 /***/ }),
-/* 18 */
+
+/***/ 18:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var utils = __webpack_require__(0);
-var bind = __webpack_require__(8);
+var bind = __webpack_require__(7);
 var Axios = __webpack_require__(20);
 var defaults = __webpack_require__(4);
 
@@ -12747,9 +13148,9 @@ axios.create = function create(instanceConfig) {
 };
 
 // Expose Cancel & CancelToken
-axios.Cancel = __webpack_require__(12);
+axios.Cancel = __webpack_require__(11);
 axios.CancelToken = __webpack_require__(34);
-axios.isCancel = __webpack_require__(11);
+axios.isCancel = __webpack_require__(10);
 
 // Expose all/spread
 axios.all = function all(promises) {
@@ -12764,7 +13165,8 @@ module.exports.default = axios;
 
 
 /***/ }),
-/* 19 */
+
+/***/ 19:
 /***/ (function(module, exports) {
 
 /*!
@@ -12791,7 +13193,36 @@ function isSlowBuffer (obj) {
 
 
 /***/ }),
-/* 20 */
+
+/***/ 2:
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
+/***/ 20:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12877,7 +13308,8 @@ module.exports = Axios;
 
 
 /***/ }),
-/* 21 */
+
+/***/ 21:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12896,13 +13328,14 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
 
 
 /***/ }),
-/* 22 */
+
+/***/ 22:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var createError = __webpack_require__(10);
+var createError = __webpack_require__(9);
 
 /**
  * Resolve or reject a Promise based on response status.
@@ -12929,7 +13362,8 @@ module.exports = function settle(resolve, reject, response) {
 
 
 /***/ }),
-/* 23 */
+
+/***/ 23:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12957,7 +13391,8 @@ module.exports = function enhanceError(error, config, code, request, response) {
 
 
 /***/ }),
-/* 24 */
+
+/***/ 24:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13030,7 +13465,8 @@ module.exports = function buildURL(url, params, paramsSerializer) {
 
 
 /***/ }),
-/* 25 */
+
+/***/ 25:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13090,7 +13526,8 @@ module.exports = function parseHeaders(headers) {
 
 
 /***/ }),
-/* 26 */
+
+/***/ 26:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13165,7 +13602,8 @@ module.exports = (
 
 
 /***/ }),
-/* 27 */
+
+/***/ 27:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13208,7 +13646,8 @@ module.exports = btoa;
 
 
 /***/ }),
-/* 28 */
+
+/***/ 28:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13268,7 +13707,8 @@ module.exports = (
 
 
 /***/ }),
-/* 29 */
+
+/***/ 29:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13327,7 +13767,185 @@ module.exports = InterceptorManager;
 
 
 /***/ }),
-/* 30 */
+
+/***/ 293:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_axios__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_tinycolor2__);
+
+
+
+function AnnotationsMouseOver(e, element) {
+    element.options.label.enabled = true;
+    element.chartInstance.chart.canvas.style.cursor = 'pointer';
+    element.chartInstance.update();
+}
+function AnnotationsMouseOut(e, element) {
+    element.options.label.enabled = false;
+    element.chartInstance.chart.canvas.style.cursor = 'initial';
+    element.chartInstance.update();
+}
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    namespaced: true,
+
+    state: {
+        annotations: [{
+            type: "line",
+            mode: "vertical",
+            scaleID: "x-axis-0",
+            value: new Date(2016, 10),
+            borderColor: "red",
+            borderDash: [2, 2],
+            onMouseover: function onMouseover(e) {
+                AnnotationsMouseOver(e, this);
+            },
+            onMouseout: function onMouseout(e) {
+                AnnotationsMouseOut(e, this);
+            },
+            label: {
+                content: "2016 Election Month",
+                enabled: false,
+                position: "top"
+            }
+        }, {
+            type: "line",
+            mode: "vertical",
+            scaleID: "x-axis-0",
+            value: new Date(2016, 6),
+            borderColor: "red",
+            borderDash: [2, 2],
+            onMouseover: function onMouseover(e) {
+                AnnotationsMouseOver(e, this);
+            },
+            onMouseout: function onMouseout(e) {
+                AnnotationsMouseOut(e, this);
+            },
+            label: {
+                content: "Trump accepts official nomination",
+                enabled: false,
+                position: "top"
+            }
+        }, {
+            type: "line",
+            mode: "vertical",
+            scaleID: "x-axis-0",
+            value: new Date(2016, 2),
+            borderColor: "red",
+            borderDash: [2, 2],
+            onMouseover: function onMouseover(e) {
+                AnnotationsMouseOver(e, this);
+            },
+            onMouseout: function onMouseout(e) {
+                AnnotationsMouseOut(e, this);
+            },
+            label: {
+                content: "Trump wins 7 states on Super Tuesday",
+                enabled: false,
+                position: "top"
+            }
+        }, {
+            type: "line",
+            mode: "vertical",
+            scaleID: "x-axis-0",
+            value: new Date(2016, 0),
+            borderColor: "red",
+            borderDash: [2, 2],
+            onMouseover: function onMouseover(e) {
+                AnnotationsMouseOver(e, this);
+            },
+            onMouseout: function onMouseout(e) {
+                AnnotationsMouseOut(e, this);
+            },
+            label: {
+                content: "First Polls Of 2016",
+                enabled: false,
+                position: "top"
+            }
+        }, {
+            type: "line",
+            mode: "vertical",
+            scaleID: "x-axis-0",
+            value: new Date(2017, 0),
+            borderColor: "red",
+            borderDash: [2, 2],
+            onMouseover: function onMouseover(e) {
+                AnnotationsMouseOver(e, this);
+            },
+            onMouseout: function onMouseout(e) {
+                AnnotationsMouseOut(e, this);
+            },
+            label: {
+                content: "Inaugeration Month",
+                enabled: false,
+                position: "top"
+            }
+        }, {
+            type: "line",
+            mode: "vertical",
+            scaleID: "x-axis-0",
+            value: new Date(2015, 6),
+            borderColor: "red",
+            borderDash: [2, 2],
+            onMouseover: function onMouseover(e) {
+                AnnotationsMouseOver(e, this);
+            },
+            onMouseout: function onMouseout(e) {
+                AnnotationsMouseOut(e, this);
+            },
+            label: {
+                content: "Trump announces his candidacy",
+                enabled: false,
+                position: "top"
+            }
+        }, {
+            type: "line",
+            mode: "vertical",
+            scaleID: "x-axis-0",
+            value: new Date(2017, 8),
+            borderColor: "red",
+            borderDash: [2, 2],
+            onMouseover: function onMouseover(e) {
+                AnnotationsMouseOver(e, this);
+            },
+            onMouseout: function onMouseout(e) {
+                AnnotationsMouseOut(e, this);
+            },
+            label: {
+                content: "DACA, Hurricane Maria, 'Rocket Man'",
+                enabled: false,
+                position: "top"
+            }
+        }]
+    },
+
+    getters: {
+        getAnnotations: function getAnnotations(state) {
+            return function () {
+                return state.annotations;
+            };
+        }
+    },
+
+    mutations: {},
+
+    actions: {}
+});
+
+/***/ }),
+
+/***/ 3:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(18);
+
+/***/ }),
+
+/***/ 30:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13335,7 +13953,7 @@ module.exports = InterceptorManager;
 
 var utils = __webpack_require__(0);
 var transformData = __webpack_require__(31);
-var isCancel = __webpack_require__(11);
+var isCancel = __webpack_require__(10);
 var defaults = __webpack_require__(4);
 var isAbsoluteURL = __webpack_require__(32);
 var combineURLs = __webpack_require__(33);
@@ -13420,7 +14038,8 @@ module.exports = function dispatchRequest(config) {
 
 
 /***/ }),
-/* 31 */
+
+/***/ 31:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13447,7 +14066,8 @@ module.exports = function transformData(data, headers, fns) {
 
 
 /***/ }),
-/* 32 */
+
+/***/ 32:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13468,7 +14088,8 @@ module.exports = function isAbsoluteURL(url) {
 
 
 /***/ }),
-/* 33 */
+
+/***/ 33:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13489,13 +14110,14 @@ module.exports = function combineURLs(baseURL, relativeURL) {
 
 
 /***/ }),
-/* 34 */
+
+/***/ 34:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var Cancel = __webpack_require__(12);
+var Cancel = __webpack_require__(11);
 
 /**
  * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -13553,7 +14175,8 @@ module.exports = CancelToken;
 
 
 /***/ }),
-/* 35 */
+
+/***/ 35:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13587,7 +14210,8 @@ module.exports = function spread(callback) {
 
 
 /***/ }),
-/* 36 */
+
+/***/ 36:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13595,12 +14219,13 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var _typeof="fun
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)):window.Vue&&window.axios&&Vue.use(o,window.axios)}();
 
 /***/ }),
-/* 37 */
+
+/***/ 37:
 /***/ (function(module, exports, __webpack_require__) {
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(true)
-		module.exports = factory(__webpack_require__(2));
+		module.exports = factory(__webpack_require__(1));
 	else if(typeof define === 'function' && define.amd)
 		define(["vue"], factory);
 	else if(typeof exports === 'object')
@@ -33687,7 +34312,8 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_vue__;
 //# sourceMappingURL=vuetify.js.map
 
 /***/ }),
-/* 38 */
+
+/***/ 38:
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
@@ -33718,10 +34344,11 @@ if(false) {
 }
 
 /***/ }),
-/* 39 */
+
+/***/ 39:
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(5)(false);
+exports = module.exports = __webpack_require__(13)(false);
 // imports
 
 
@@ -33732,7 +34359,113 @@ exports.push([module.i, "@keyframes shake{59%{margin-left:0}60%,80%{margin-left:
 
 
 /***/ }),
-/* 40 */
+
+/***/ 4:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {
+
+var utils = __webpack_require__(0);
+var normalizeHeaderName = __webpack_require__(21);
+
+var DEFAULT_CONTENT_TYPE = {
+  'Content-Type': 'application/x-www-form-urlencoded'
+};
+
+function setContentTypeIfUnset(headers, value) {
+  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
+    headers['Content-Type'] = value;
+  }
+}
+
+function getDefaultAdapter() {
+  var adapter;
+  if (typeof XMLHttpRequest !== 'undefined') {
+    // For browsers use XHR adapter
+    adapter = __webpack_require__(8);
+  } else if (typeof process !== 'undefined') {
+    // For node use HTTP adapter
+    adapter = __webpack_require__(8);
+  }
+  return adapter;
+}
+
+var defaults = {
+  adapter: getDefaultAdapter(),
+
+  transformRequest: [function transformRequest(data, headers) {
+    normalizeHeaderName(headers, 'Content-Type');
+    if (utils.isFormData(data) ||
+      utils.isArrayBuffer(data) ||
+      utils.isBuffer(data) ||
+      utils.isStream(data) ||
+      utils.isFile(data) ||
+      utils.isBlob(data)
+    ) {
+      return data;
+    }
+    if (utils.isArrayBufferView(data)) {
+      return data.buffer;
+    }
+    if (utils.isURLSearchParams(data)) {
+      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
+      return data.toString();
+    }
+    if (utils.isObject(data)) {
+      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
+      return JSON.stringify(data);
+    }
+    return data;
+  }],
+
+  transformResponse: [function transformResponse(data) {
+    /*eslint no-param-reassign:0*/
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data);
+      } catch (e) { /* Ignore */ }
+    }
+    return data;
+  }],
+
+  /**
+   * A timeout in milliseconds to abort a request. If set to 0 (default) a
+   * timeout is not created.
+   */
+  timeout: 0,
+
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+
+  maxContentLength: -1,
+
+  validateStatus: function validateStatus(status) {
+    return status >= 200 && status < 300;
+  }
+};
+
+defaults.headers = {
+  common: {
+    'Accept': 'application/json, text/plain, */*'
+  }
+};
+
+utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+  defaults.headers[method] = {};
+});
+
+utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
+});
+
+module.exports = defaults;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+
+/***/ }),
+
+/***/ 40:
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -34091,7 +34824,8 @@ function updateLink (link, options, obj) {
 
 
 /***/ }),
-/* 41 */
+
+/***/ 41:
 /***/ (function(module, exports) {
 
 
@@ -34186,7 +34920,8 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 42 */
+
+/***/ 42:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34517,27 +35252,35 @@ exports.default = Object.freeze({
 //# sourceMappingURL=colors.js.map
 
 /***/ }),
-/* 43 */
+
+/***/ 43:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vuex__ = __webpack_require__(44);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__stores_hashtagStore__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stores_tweetStore__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__stores_annotationsStore__ = __webpack_require__(293);
 
 
 __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */]);
 
 
+
+
 /* harmony default export */ __webpack_exports__["a"] = (new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
     modules: {
-        hashtags: __WEBPACK_IMPORTED_MODULE_2__stores_hashtagStore__["a" /* default */]
+        hashtags: __WEBPACK_IMPORTED_MODULE_2__stores_hashtagStore__["a" /* default */],
+        tweets: __WEBPACK_IMPORTED_MODULE_3__stores_tweetStore__["a" /* default */],
+        annotations: __WEBPACK_IMPORTED_MODULE_4__stores_annotationsStore__["a" /* default */]
     }
 }));
 
 /***/ }),
-/* 44 */
+
+/***/ 44:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -35482,12 +36225,16 @@ var index_esm = {
 
 
 /***/ }),
-/* 45 */
+
+/***/ 45:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_axios__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_tinycolor2__);
+
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
@@ -35497,7 +36244,9 @@ var index_esm = {
     state: {
         status: '',
         top: [],
-        hashtags: []
+        hashtags: [],
+        summary: [],
+        count: 0
     },
 
     getters: {
@@ -35506,9 +36255,68 @@ var index_esm = {
                 return state.hashtags;
             };
         },
+        getCount: function getCount(state) {
+            return function () {
+                return state.count;
+            };
+        },
         getTop: function getTop(state) {
             return function () {
                 return state.top;
+            };
+        },
+        getTopCount: function getTopCount(state) {
+            return function () {
+                return state.top[0].count;
+            };
+        },
+        getSummaryDataForChart: function getSummaryDataForChart(state) {
+            return function () {
+                var chartConfig = [];
+
+                if (typeof state.summary === 'undefined') {
+                    return false;
+                }
+
+                var byCategory = {};
+                var categories = [];
+                if (typeof state.summary['by_category'] !== 'undefined') {
+                    state.summary['by_category'].forEach(function (record) {
+                        if (typeof byCategory[record.account_category] === 'undefined') {
+                            byCategory[record.account_category] = [];
+                            categories.push(record.account_category);
+                        }
+                        byCategory[record.account_category].push(record);
+                    });
+                    var color = __WEBPACK_IMPORTED_MODULE_1_tinycolor2___default()('rgba(233,30,99, 0.6)');
+                    categories.forEach(function (category) {
+                        byCategory[category].forEach(function (month) {
+                            month.x = new Date(month.year, month.month);
+                            month.y = month.count;
+                        });
+                        color = color.spin(40);
+                        chartConfig.push({
+                            label: category,
+                            backgroundColor: color.toString(),
+                            data: byCategory[category],
+                            lineTension: 0
+                        });
+                    });
+                }
+
+                if (typeof state.summary['by_month'] !== 'undefined') {
+                    state.summary['by_month'].forEach(function (month) {
+                        month.x = new Date(month.year, month.month);
+                        month.y = month.count;
+                    });
+                    chartConfig.push({
+                        label: 'All Categories',
+                        backgroundColor: 'rgba(233,30,99, 0.6)',
+                        data: state.summary['by_month'],
+                        lineTension: 0
+                    });
+                }
+                return chartConfig;
             };
         }
     },
@@ -35527,6 +36335,14 @@ var index_esm = {
         topSuccess: function topSuccess(state, hashtags) {
             state.status = 'success';
             state.top = hashtags;
+        },
+        summarySuccess: function summarySuccess(state, summary) {
+            state.status = 'success';
+            state.summary = summary;
+        },
+        countSuccess: function countSuccess(state, count) {
+            state.status = 'success';
+            state.count = count;
         },
         success: function success(state) {
             state.status = 'success';
@@ -35552,9 +36368,26 @@ var index_esm = {
             });
         },
 
-        top: function top(_ref2, limit) {
+        summary: function summary(_ref2) {
             var commit = _ref2.commit,
                 dispatch = _ref2.dispatch;
+
+            return new Promise(function (resolve, reject) {
+                commit('request');
+                __WEBPACK_IMPORTED_MODULE_0_axios___default()({ url: 'hashtags/summary', method: 'GET' }).then(function (resp) {
+                    var summary = resp.data;
+                    commit('summarySuccess', summary);
+                    resolve(resp);
+                }).catch(function (err) {
+                    commit('error');
+                    reject(err);
+                });
+            });
+        },
+
+        top: function top(_ref3, limit) {
+            var commit = _ref3.commit,
+                dispatch = _ref3.dispatch;
 
             return new Promise(function (resolve, reject) {
                 commit('request');
@@ -35567,21 +36400,235 @@ var index_esm = {
                     reject(err);
                 });
             });
+        },
+
+        count: function count(_ref4) {
+            var commit = _ref4.commit,
+                dispatch = _ref4.dispatch;
+
+            return new Promise(function (resolve, reject) {
+                commit('request');
+                __WEBPACK_IMPORTED_MODULE_0_axios___default()({ url: 'hashtags/count', method: 'GET' }).then(function (resp) {
+                    commit('countSuccess', resp.data);
+                    resolve(resp);
+                }).catch(function (err) {
+                    commit('error');
+                    reject(err);
+                });
+            });
         }
 
     }
 });
 
 /***/ }),
-/* 46 */
+
+/***/ 46:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_axios__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_tinycolor2__);
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    namespaced: true,
+
+    state: {
+        status: '',
+        top: [],
+        tweets: [],
+        summary: [],
+        count: 0
+    },
+
+    getters: {
+        getTweets: function getTweets(state) {
+            return function () {
+                return state.tweets;
+            };
+        },
+        getCount: function getCount(state) {
+            return function () {
+                return state.count;
+            };
+        },
+        getTop: function getTop(state) {
+            return function () {
+                return state.top;
+            };
+        },
+        getTopCount: function getTopCount(state) {
+            return function () {
+                return state.top[0].count;
+            };
+        },
+        getSummaryDataForChart: function getSummaryDataForChart(state) {
+            return function () {
+                var chartConfig = [];
+
+                if (typeof state.summary === 'undefined') {
+                    return false;
+                }
+
+                var byCategory = {};
+                var categories = [];
+                if (typeof state.summary['by_category'] !== 'undefined') {
+                    state.summary['by_category'].forEach(function (record) {
+                        if (typeof byCategory[record.account_category] === 'undefined') {
+                            byCategory[record.account_category] = [];
+                            categories.push(record.account_category);
+                        }
+                        byCategory[record.account_category].push(record);
+                    });
+                    var color = __WEBPACK_IMPORTED_MODULE_1_tinycolor2___default()('rgba(233,30,99, 0.6)');
+                    categories.forEach(function (category) {
+                        byCategory[category].forEach(function (month) {
+                            month.x = new Date(month.year, month.month);
+                            month.y = month.count;
+                        });
+                        color = color.spin(40);
+                        chartConfig.push({
+                            label: category,
+                            backgroundColor: color.toString(),
+                            data: byCategory[category],
+                            lineTension: 0
+                        });
+                    });
+                }
+
+                if (typeof state.summary['by_month'] !== 'undefined') {
+                    state.summary['by_month'].forEach(function (month) {
+                        month.x = new Date(month.year, month.month);
+                        month.y = month.count;
+                    });
+                    chartConfig.push({
+                        label: 'All Categories',
+                        backgroundColor: 'rgba(233,30,99, 0.6)',
+                        data: state.summary['by_month'],
+                        lineTension: 0
+                    });
+                }
+                return chartConfig;
+            };
+        }
+    },
+
+    mutations: {
+        request: function request(state) {
+            state.status = 'loading';
+        },
+        error: function error(state) {
+            state.status = 'error';
+        },
+        indexSuccess: function indexSuccess(state, tweets) {
+            state.status = 'success';
+            state.tweets = tweets;
+        },
+        topSuccess: function topSuccess(state, tweets) {
+            state.status = 'success';
+            state.top = tweets;
+        },
+        summarySuccess: function summarySuccess(state, summary) {
+            state.status = 'success';
+            state.summary = summary;
+        },
+        countSuccess: function countSuccess(state, count) {
+            state.status = 'success';
+            state.count = count;
+        },
+        success: function success(state) {
+            state.status = 'success';
+        }
+    },
+
+    actions: {
+
+        index: function index(_ref) {
+            var commit = _ref.commit,
+                dispatch = _ref.dispatch;
+
+            return new Promise(function (resolve, reject) {
+                commit('request');
+                __WEBPACK_IMPORTED_MODULE_0_axios___default()({ url: 'tweets', method: 'GET' }).then(function (resp) {
+                    var tweets = resp.data;
+                    commit('indexSuccess', tweets);
+                    resolve(resp);
+                }).catch(function (err) {
+                    commit('error');
+                    reject(err);
+                });
+            });
+        },
+
+        summary: function summary(_ref2) {
+            var commit = _ref2.commit,
+                dispatch = _ref2.dispatch;
+
+            return new Promise(function (resolve, reject) {
+                commit('request');
+                __WEBPACK_IMPORTED_MODULE_0_axios___default()({ url: 'tweets/summary', method: 'GET' }).then(function (resp) {
+                    var summary = resp.data;
+                    commit('summarySuccess', summary);
+                    resolve(resp);
+                }).catch(function (err) {
+                    commit('error');
+                    reject(err);
+                });
+            });
+        },
+
+        top: function top(_ref3, limit) {
+            var commit = _ref3.commit,
+                dispatch = _ref3.dispatch;
+
+            return new Promise(function (resolve, reject) {
+                commit('request');
+                __WEBPACK_IMPORTED_MODULE_0_axios___default()({ url: 'tweets/top/' + limit, method: 'GET' }).then(function (resp) {
+                    var tweets = resp.data;
+                    commit('topSuccess', tweets);
+                    resolve(resp);
+                }).catch(function (err) {
+                    commit('error');
+                    reject(err);
+                });
+            });
+        },
+
+        count: function count(_ref4) {
+            var commit = _ref4.commit,
+                dispatch = _ref4.dispatch;
+
+            return new Promise(function (resolve, reject) {
+                commit('request');
+                __WEBPACK_IMPORTED_MODULE_0_axios___default()({ url: 'tweets/count', method: 'GET' }).then(function (resp) {
+                    commit('countSuccess', resp.data);
+                    resolve(resp);
+                }).catch(function (err) {
+                    commit('error');
+                    reject(err);
+                });
+            });
+        }
+
+    }
+});
+
+/***/ }),
+
+/***/ 47:
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(5)
 /* script */
-var __vue_script__ = __webpack_require__(47)
+var __vue_script__ = __webpack_require__(48)
 /* template */
-var __vue_template__ = __webpack_require__(50)
+var __vue_template__ = __webpack_require__(52)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -35620,12 +36667,13 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 47 */
+
+/***/ 48:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Navigation_vue__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Navigation_vue__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Navigation_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__Navigation_vue__);
 //
 //
@@ -35644,23 +36692,20 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 48 */
+
+/***/ 49:
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(78)
-}
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(5)
 /* script */
-var __vue_script__ = __webpack_require__(82)
+var __vue_script__ = __webpack_require__(50)
 /* template */
-var __vue_template__ = __webpack_require__(49)
+var __vue_template__ = __webpack_require__(51)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
-var __vue_styles__ = injectStyle
+var __vue_styles__ = null
 /* scopeId */
 var __vue_scopeId__ = null
 /* moduleIdentifier (server only) */
@@ -35695,7 +36740,149 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 49 */
+
+/***/ 5:
+/***/ (function(module, exports) {
+
+/* globals __VUE_SSR_CONTEXT__ */
+
+// IMPORTANT: Do NOT use ES2015 features in this file.
+// This module is a runtime utility for cleaner component module output and will
+// be included in the final webpack user bundle.
+
+module.exports = function normalizeComponent (
+  rawScriptExports,
+  compiledTemplate,
+  functionalTemplate,
+  injectStyles,
+  scopeId,
+  moduleIdentifier /* server only */
+) {
+  var esModule
+  var scriptExports = rawScriptExports = rawScriptExports || {}
+
+  // ES6 modules interop
+  var type = typeof rawScriptExports.default
+  if (type === 'object' || type === 'function') {
+    esModule = rawScriptExports
+    scriptExports = rawScriptExports.default
+  }
+
+  // Vue.extend constructor export interop
+  var options = typeof scriptExports === 'function'
+    ? scriptExports.options
+    : scriptExports
+
+  // render functions
+  if (compiledTemplate) {
+    options.render = compiledTemplate.render
+    options.staticRenderFns = compiledTemplate.staticRenderFns
+    options._compiled = true
+  }
+
+  // functional template
+  if (functionalTemplate) {
+    options.functional = true
+  }
+
+  // scopedId
+  if (scopeId) {
+    options._scopeId = scopeId
+  }
+
+  var hook
+  if (moduleIdentifier) { // server build
+    hook = function (context) {
+      // 2.3 injection
+      context =
+        context || // cached call
+        (this.$vnode && this.$vnode.ssrContext) || // stateful
+        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
+      // 2.2 with runInNewContext: true
+      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+        context = __VUE_SSR_CONTEXT__
+      }
+      // inject component styles
+      if (injectStyles) {
+        injectStyles.call(this, context)
+      }
+      // register component module identifier for async chunk inferrence
+      if (context && context._registeredComponents) {
+        context._registeredComponents.add(moduleIdentifier)
+      }
+    }
+    // used by ssr in case component is cached and beforeCreate
+    // never gets called
+    options._ssrRegister = hook
+  } else if (injectStyles) {
+    hook = injectStyles
+  }
+
+  if (hook) {
+    var functional = options.functional
+    var existing = functional
+      ? options.render
+      : options.beforeCreate
+
+    if (!functional) {
+      // inject component registration as beforeCreate hook
+      options.beforeCreate = existing
+        ? [].concat(existing, hook)
+        : [hook]
+    } else {
+      // for template-only hot-reload because in that case the render fn doesn't
+      // go through the normalizer
+      options._injectStyles = hook
+      // register for functioal component in vue file
+      options.render = function renderWithStyleInjection (h, context) {
+        hook.call(context)
+        return existing(h, context)
+      }
+    }
+  }
+
+  return {
+    esModule: esModule,
+    exports: scriptExports,
+    options: options
+  }
+}
+
+
+/***/ }),
+
+/***/ 50:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {};
+    },
+    methods: {}
+});
+
+/***/ }),
+
+/***/ 51:
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -35708,20 +36895,24 @@ var render = function() {
     [
       _c(
         "v-toolbar",
-        { staticClass: "cyan" },
+        {
+          staticClass: "deep-purple darken-2",
+          attrs: { dark: "", "scroll-off-screen": "" }
+        },
         [
-          _c("v-toolbar-title", [_vm._v("Troll Tweets")]),
+          _c("v-toolbar-title", { staticClass: "white--text" }, [
+            _vm._v("Troll Tweets")
+          ]),
           _vm._v(" "),
           _c("v-spacer"),
           _vm._v(" "),
           _c(
-            "v-toolbar-items",
-            { staticClass: "hidden-sm-and-down" },
+            "div",
             [
               _c(
                 "v-btn",
                 {
-                  attrs: { flat: "" },
+                  attrs: { small: "", flat: "" },
                   on: {
                     click: function($event) {
                       _vm.$router.push({ name: "tweets" })
@@ -35734,20 +36925,7 @@ var render = function() {
               _c(
                 "v-btn",
                 {
-                  attrs: { flat: "" },
-                  on: {
-                    click: function($event) {
-                      _vm.$router.push({ name: "timeline" })
-                    }
-                  }
-                },
-                [_vm._v("Timeline")]
-              ),
-              _vm._v(" "),
-              _c(
-                "v-btn",
-                {
-                  attrs: { flat: "" },
+                  attrs: { small: "", flat: "" },
                   on: {
                     click: function($event) {
                       _vm.$router.push({ name: "hashtags" })
@@ -35760,33 +36938,7 @@ var render = function() {
               _c(
                 "v-btn",
                 {
-                  attrs: { flat: "" },
-                  on: {
-                    click: function($event) {
-                      _vm.$router.push({ name: "links" })
-                    }
-                  }
-                },
-                [_vm._v("Links")]
-              ),
-              _vm._v(" "),
-              _c(
-                "v-btn",
-                {
-                  attrs: { flat: "" },
-                  on: {
-                    click: function($event) {
-                      _vm.$router.push({ name: "keywords" })
-                    }
-                  }
-                },
-                [_vm._v("Keywords")]
-              ),
-              _vm._v(" "),
-              _c(
-                "v-btn",
-                {
-                  attrs: { flat: "" },
+                  attrs: { small: "", flat: "" },
                   on: {
                     click: function($event) {
                       _vm.$router.push({ name: "summary" })
@@ -35798,25 +36950,6 @@ var render = function() {
             ],
             1
           )
-        ],
-        1
-      ),
-      _vm._v(" "),
-      _c(
-        "v-btn",
-        {
-          attrs: {
-            absolute: "",
-            dark: "",
-            bottom: "",
-            right: "",
-            color: "purple global-filter white--text"
-          }
-        },
-        [
-          _c("v-icon", [_vm._v("fa-gear")]),
-          _vm._v(" "),
-          _c("span", [_vm._v("Filter All Data")])
         ],
         1
       )
@@ -35835,7 +36968,8 @@ if (false) {
 }
 
 /***/ }),
-/* 50 */
+
+/***/ 52:
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -35864,65 +36998,67 @@ if (false) {
 }
 
 /***/ }),
-/* 51 */
+
+/***/ 53:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_router__ = __webpack_require__(52);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_Summary_vue__ = __webpack_require__(53);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_Summary_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__components_Summary_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_Timeline_vue__ = __webpack_require__(56);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_Timeline_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__components_Timeline_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_Hashtags_vue__ = __webpack_require__(58);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_Hashtags_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__components_Hashtags_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_Links_vue__ = __webpack_require__(70);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_Links_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__components_Links_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_Keywords_vue__ = __webpack_require__(72);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_Keywords_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6__components_Keywords_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_Tweets_vue__ = __webpack_require__(80);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_Tweets_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__components_Tweets_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_router__ = __webpack_require__(54);
 
 
 __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1_vue_router__["a" /* default */]);
 
-
-
-
-
-
-
+var Summary = function Summary() {
+    return __webpack_require__.e/* import() */(2).then(__webpack_require__.bind(null, 57));
+};
+var Timeline = function Timeline() {
+    return __webpack_require__.e/* import() */(3).then(__webpack_require__.bind(null, 58));
+};
+var Hashtags = function Hashtags() {
+    return __webpack_require__.e/* import() */(1).then(__webpack_require__.bind(null, 59));
+};
+var Links = function Links() {
+    return __webpack_require__.e/* import() */(4).then(__webpack_require__.bind(null, 60));
+};
+var Keywords = function Keywords() {
+    return __webpack_require__.e/* import() */(5).then(__webpack_require__.bind(null, 61));
+};
+var Tweets = function Tweets() {
+    return __webpack_require__.e/* import() */(0).then(__webpack_require__.bind(null, 62));
+};
 /* harmony default export */ __webpack_exports__["a"] = (new __WEBPACK_IMPORTED_MODULE_1_vue_router__["a" /* default */]({
     routes: [{
         path: '/',
         name: 'summary',
-        component: __WEBPACK_IMPORTED_MODULE_2__components_Summary_vue___default.a
+        component: Summary
     }, {
         path: '/tweets',
         name: 'tweets',
-        component: __WEBPACK_IMPORTED_MODULE_7__components_Tweets_vue___default.a
+        component: Tweets
     }, {
         path: '/timeline',
         name: 'timeline',
-        component: __WEBPACK_IMPORTED_MODULE_3__components_Timeline_vue___default.a
+        component: Timeline
     }, {
         path: '/hashtags',
         name: 'hashtags',
-        component: __WEBPACK_IMPORTED_MODULE_4__components_Hashtags_vue___default.a
+        component: Hashtags
     }, {
         path: '/links',
         name: 'links',
-        component: __WEBPACK_IMPORTED_MODULE_5__components_Links_vue___default.a
+        component: Links
     }, {
         path: '/keywords',
         name: 'keywords',
-        component: __WEBPACK_IMPORTED_MODULE_6__components_Keywords_vue___default.a
+        component: Keywords
     }]
 }));
 
 /***/ }),
-/* 52 */
+
+/***/ 54:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -38552,4944 +39688,443 @@ if (inBrowser && window.Vue) {
 
 
 /***/ }),
-/* 53 */
-/***/ (function(module, exports, __webpack_require__) {
 
-var disposed = false
-var normalizeComponent = __webpack_require__(1)
-/* script */
-var __vue_script__ = __webpack_require__(54)
-/* template */
-var __vue_template__ = __webpack_require__(55)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/Summary.vue"
+/***/ 55:
+/***/ (function(module, exports) {
 
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-0ba6fe82", Component.options)
-  } else {
-    hotAPI.reload("data-v-0ba6fe82", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
+// removed by extract-text-webpack-plugin
 
-module.exports = Component.exports
+/***/ }),
+
+/***/ 56:
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
+/***/ 6:
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 54 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+/***/ 7:
+/***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
-/* harmony default export */ __webpack_exports__["default"] = ({
-    mounted: function mounted() {
-        console.log('Component mounted.');
+
+module.exports = function bind(fn, thisArg) {
+  return function wrap() {
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
     }
-});
+    return fn.apply(thisArg, args);
+  };
+};
+
 
 /***/ }),
-/* 55 */
+
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "v-jumbotron",
-    [
-      _c(
-        "v-container",
-        { attrs: { "fill-height": "" } },
-        [
-          _c(
-            "v-layout",
-            { attrs: { "align-center": "" } },
-            [
-              _c(
-                "v-flex",
-                [
-                  _c("h3", { staticClass: "display-3" }, [
-                    _vm._v("TrollTweets")
-                  ]),
-                  _vm._v(" "),
-                  _c("span", { staticClass: "subheading" }, [
-                    _vm._v(
-                      "The tweets used on this site are the 3 million tweets shared by "
-                    ),
-                    _c(
-                      "a",
-                      {
-                        attrs: {
-                          href:
-                            "https://fivethirtyeight.com/features/why-were-sharing-3-million-russian-troll-tweets/"
-                        }
-                      },
-                      [_vm._v("FiveThirtyEight")]
-                    ),
-                    _vm._v(" on "),
-                    _c(
-                      "a",
-                      {
-                        attrs: {
-                          href:
-                            "https://github.com/fivethirtyeight/russian-troll-tweets/"
-                        }
-                      },
-                      [_vm._v("GitHub")]
-                    ),
-                    _vm._v(
-                      ". This tool simple attemps to make that data easier to visualize and navigate, in the hopes of finding relavent patterns."
-                    )
-                  ]),
-                  _vm._v(" "),
-                  _c("v-divider", { staticClass: "my-3" })
-                ],
-                1
-              )
-            ],
-            1
-          )
-        ],
-        1
-      )
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-0ba6fe82", module.exports)
-  }
-}
+"use strict";
+
+
+var utils = __webpack_require__(0);
+var settle = __webpack_require__(22);
+var buildURL = __webpack_require__(24);
+var parseHeaders = __webpack_require__(25);
+var isURLSameOrigin = __webpack_require__(26);
+var createError = __webpack_require__(9);
+var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(27);
+
+module.exports = function xhrAdapter(config) {
+  return new Promise(function dispatchXhrRequest(resolve, reject) {
+    var requestData = config.data;
+    var requestHeaders = config.headers;
+
+    if (utils.isFormData(requestData)) {
+      delete requestHeaders['Content-Type']; // Let the browser set it
+    }
+
+    var request = new XMLHttpRequest();
+    var loadEvent = 'onreadystatechange';
+    var xDomain = false;
+
+    // For IE 8/9 CORS support
+    // Only supports POST and GET calls and doesn't returns the response headers.
+    // DON'T do this for testing b/c XMLHttpRequest is mocked, not XDomainRequest.
+    if ("development" !== 'test' &&
+        typeof window !== 'undefined' &&
+        window.XDomainRequest && !('withCredentials' in request) &&
+        !isURLSameOrigin(config.url)) {
+      request = new window.XDomainRequest();
+      loadEvent = 'onload';
+      xDomain = true;
+      request.onprogress = function handleProgress() {};
+      request.ontimeout = function handleTimeout() {};
+    }
+
+    // HTTP basic authentication
+    if (config.auth) {
+      var username = config.auth.username || '';
+      var password = config.auth.password || '';
+      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
+    }
+
+    request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
+
+    // Set the request timeout in MS
+    request.timeout = config.timeout;
+
+    // Listen for ready state
+    request[loadEvent] = function handleLoad() {
+      if (!request || (request.readyState !== 4 && !xDomain)) {
+        return;
+      }
+
+      // The request errored out and we didn't get a response, this will be
+      // handled by onerror instead
+      // With one exception: request that using file: protocol, most browsers
+      // will return status as 0 even though it's a successful request
+      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
+        return;
+      }
+
+      // Prepare the response
+      var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
+      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
+      var response = {
+        data: responseData,
+        // IE sends 1223 instead of 204 (https://github.com/axios/axios/issues/201)
+        status: request.status === 1223 ? 204 : request.status,
+        statusText: request.status === 1223 ? 'No Content' : request.statusText,
+        headers: responseHeaders,
+        config: config,
+        request: request
+      };
+
+      settle(resolve, reject, response);
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle low level network errors
+    request.onerror = function handleError() {
+      // Real errors are hidden from us by the browser
+      // onerror should only fire if it's a network error
+      reject(createError('Network Error', config, null, request));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle timeout
+    request.ontimeout = function handleTimeout() {
+      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED',
+        request));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Add xsrf header
+    // This is only done if running in a standard browser environment.
+    // Specifically not if we're in a web worker, or react-native.
+    if (utils.isStandardBrowserEnv()) {
+      var cookies = __webpack_require__(28);
+
+      // Add xsrf header
+      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
+          cookies.read(config.xsrfCookieName) :
+          undefined;
+
+      if (xsrfValue) {
+        requestHeaders[config.xsrfHeaderName] = xsrfValue;
+      }
+    }
+
+    // Add headers to the request
+    if ('setRequestHeader' in request) {
+      utils.forEach(requestHeaders, function setRequestHeader(val, key) {
+        if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
+          // Remove Content-Type if data is undefined
+          delete requestHeaders[key];
+        } else {
+          // Otherwise add header to the request
+          request.setRequestHeader(key, val);
+        }
+      });
+    }
+
+    // Add withCredentials to request if needed
+    if (config.withCredentials) {
+      request.withCredentials = true;
+    }
+
+    // Add responseType to request if needed
+    if (config.responseType) {
+      try {
+        request.responseType = config.responseType;
+      } catch (e) {
+        // Expected DOMException thrown by browsers not compatible XMLHttpRequest Level 2.
+        // But, this can be suppressed for 'json' type as it can be parsed by default 'transformResponse' function.
+        if (config.responseType !== 'json') {
+          throw e;
+        }
+      }
+    }
+
+    // Handle progress if needed
+    if (typeof config.onDownloadProgress === 'function') {
+      request.addEventListener('progress', config.onDownloadProgress);
+    }
+
+    // Not all browsers support upload events
+    if (typeof config.onUploadProgress === 'function' && request.upload) {
+      request.upload.addEventListener('progress', config.onUploadProgress);
+    }
+
+    if (config.cancelToken) {
+      // Handle cancellation
+      config.cancelToken.promise.then(function onCanceled(cancel) {
+        if (!request) {
+          return;
+        }
+
+        request.abort();
+        reject(cancel);
+        // Clean up request
+        request = null;
+      });
+    }
+
+    if (requestData === undefined) {
+      requestData = null;
+    }
+
+    // Send the request
+    request.send(requestData);
+  });
+};
+
 
 /***/ }),
-/* 56 */
+
+/***/ 9:
 /***/ (function(module, exports, __webpack_require__) {
 
-var disposed = false
-var normalizeComponent = __webpack_require__(1)
-/* script */
-var __vue_script__ = null
-/* template */
-var __vue_template__ = __webpack_require__(57)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/Timeline.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-40ef44f8", Component.options)
-  } else {
-    hotAPI.reload("data-v-40ef44f8", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
+"use strict";
 
 
-/***/ }),
-/* 57 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "v-card",
-    [
-      _c("v-card-title", { attrs: { "primary-title": "" } }, [
-        _c("div", [
-          _c("h3", { staticClass: "headline mb-0" }, [_vm._v("Timeline")]),
-          _vm._v(" "),
-          _c("div", [_vm._v("Coming Soon")])
-        ])
-      ])
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-40ef44f8", module.exports)
-  }
-}
-
-/***/ }),
-/* 58 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-var normalizeComponent = __webpack_require__(1)
-/* script */
-var __vue_script__ = __webpack_require__(62)
-/* template */
-var __vue_template__ = __webpack_require__(69)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/Hashtags.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-40a6cbde", Component.options)
-  } else {
-    hotAPI.reload("data-v-40a6cbde", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 59 */,
-/* 60 */,
-/* 61 */
-/***/ (function(module, exports) {
+var enhanceError = __webpack_require__(23);
 
 /**
- * Translates the list format produced by css-loader into something
- * easier to manipulate.
+ * Create an Error with the specified message, config, error code, request and response.
+ *
+ * @param {string} message The error message.
+ * @param {Object} config The config.
+ * @param {string} [code] The error code (for example, 'ECONNABORTED').
+ * @param {Object} [request] The request.
+ * @param {Object} [response] The response.
+ * @returns {Error} The created error.
  */
-module.exports = function listToStyles (parentId, list) {
-  var styles = []
-  var newStyles = {}
-  for (var i = 0; i < list.length; i++) {
-    var item = list[i]
-    var id = item[0]
-    var css = item[1]
-    var media = item[2]
-    var sourceMap = item[3]
-    var part = {
-      id: parentId + ':' + i,
-      css: css,
-      media: media,
-      sourceMap: sourceMap
-    }
-    if (!newStyles[id]) {
-      styles.push(newStyles[id] = { id: id, parts: [part] })
-    } else {
-      newStyles[id].parts.push(part)
-    }
-  }
-  return styles
-}
+module.exports = function createError(message, config, code, request, response) {
+  var error = new Error(message);
+  return enhanceError(error, config, code, request, response);
+};
 
-
-/***/ }),
-/* 62 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_spinner_dist_vue_spinner__ = __webpack_require__(63);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_spinner_dist_vue_spinner___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_spinner_dist_vue_spinner__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__cards_TopList_vue__ = __webpack_require__(64);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__cards_TopList_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__cards_TopList_vue__);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    components: {
-        ScaleLoader: __WEBPACK_IMPORTED_MODULE_0_vue_spinner_dist_vue_spinner__["ScaleLoader"],
-        TopList: __WEBPACK_IMPORTED_MODULE_1__cards_TopList_vue___default.a
-    },
-    data: function data() {
-        return {
-            isLoading: false,
-            activeTab: 'dashboard'
-        };
-    },
-    mounted: function mounted() {
-        var thisComponent = this;
-        thisComponent.loading(true);
-        this.$store.dispatch('hashtags/top', 100).then(function () {
-            thisComponent.loading(false);
-        });
-    },
-
-    methods: {
-        loading: function loading(_loading) {
-            this.isLoading = _loading;
-        }
-    },
-    computed: {
-        top: function top() {
-            return this.$store.getters['hashtags/getTop']();
-        }
-    }
-});
-
-/***/ }),
-/* 63 */
-/***/ (function(module, exports, __webpack_require__) {
-
-(function webpackUniversalModuleDefinition(root, factory) {
-	if(true)
-		module.exports = factory();
-	else if(typeof define === 'function' && define.amd)
-		define([], factory);
-	else if(typeof exports === 'object')
-		exports["VueSpinner"] = factory();
-	else
-		root["VueSpinner"] = factory();
-})(this, function() {
-return /******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
-/******/ 			return installedModules[moduleId].exports;
-/******/
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			exports: {},
-/******/ 			id: moduleId,
-/******/ 			loaded: false
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.loaded = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(0);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _PulseLoader = __webpack_require__(1);
-	
-	var _PulseLoader2 = _interopRequireDefault(_PulseLoader);
-	
-	var _GridLoader = __webpack_require__(8);
-	
-	var _GridLoader2 = _interopRequireDefault(_GridLoader);
-	
-	var _ClipLoader = __webpack_require__(13);
-	
-	var _ClipLoader2 = _interopRequireDefault(_ClipLoader);
-	
-	var _RiseLoader = __webpack_require__(18);
-	
-	var _RiseLoader2 = _interopRequireDefault(_RiseLoader);
-	
-	var _BeatLoader = __webpack_require__(23);
-	
-	var _BeatLoader2 = _interopRequireDefault(_BeatLoader);
-	
-	var _SyncLoader = __webpack_require__(28);
-	
-	var _SyncLoader2 = _interopRequireDefault(_SyncLoader);
-	
-	var _RotateLoader = __webpack_require__(33);
-	
-	var _RotateLoader2 = _interopRequireDefault(_RotateLoader);
-	
-	var _FadeLoader = __webpack_require__(38);
-	
-	var _FadeLoader2 = _interopRequireDefault(_FadeLoader);
-	
-	var _PacmanLoader = __webpack_require__(43);
-	
-	var _PacmanLoader2 = _interopRequireDefault(_PacmanLoader);
-	
-	var _SquareLoader = __webpack_require__(48);
-	
-	var _SquareLoader2 = _interopRequireDefault(_SquareLoader);
-	
-	var _ScaleLoader = __webpack_require__(53);
-	
-	var _ScaleLoader2 = _interopRequireDefault(_ScaleLoader);
-	
-	var _SkewLoader = __webpack_require__(58);
-	
-	var _SkewLoader2 = _interopRequireDefault(_SkewLoader);
-	
-	var _MoonLoader = __webpack_require__(63);
-	
-	var _MoonLoader2 = _interopRequireDefault(_MoonLoader);
-	
-	var _RingLoader = __webpack_require__(68);
-	
-	var _RingLoader2 = _interopRequireDefault(_RingLoader);
-	
-	var _BounceLoader = __webpack_require__(73);
-	
-	var _BounceLoader2 = _interopRequireDefault(_BounceLoader);
-	
-	var _DotLoader = __webpack_require__(78);
-	
-	var _DotLoader2 = _interopRequireDefault(_DotLoader);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var VueSpinner = {
-	  PulseLoader: _PulseLoader2.default,
-	  GridLoader: _GridLoader2.default,
-	  ClipLoader: _ClipLoader2.default,
-	  RiseLoader: _RiseLoader2.default,
-	  BeatLoader: _BeatLoader2.default,
-	  SyncLoader: _SyncLoader2.default,
-	  RotateLoader: _RotateLoader2.default,
-	  FadeLoader: _FadeLoader2.default,
-	  PacmanLoader: _PacmanLoader2.default,
-	  SquareLoader: _SquareLoader2.default,
-	  ScaleLoader: _ScaleLoader2.default,
-	  SkewLoader: _SkewLoader2.default,
-	  MoonLoader: _MoonLoader2.default,
-	  RingLoader: _RingLoader2.default,
-	  BounceLoader: _BounceLoader2.default,
-	  DotLoader: _DotLoader2.default
-	};
-	
-	module.exports = VueSpinner;
-
-/***/ },
-/* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(2)
-	__vue_script__ = __webpack_require__(6)
-	__vue_template__ = __webpack_require__(7)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/PulseLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(3);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-453f872c&file=PulseLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./PulseLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-453f872c&file=PulseLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./PulseLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n/*.v-spinner\n{\n    margin: 100px auto;\n    text-align: center;\n}\n*/\n\n@-webkit-keyframes v-pulseStretchDelay\n{\n    0%,\n    80%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n    45%\n    {\n        -webkit-transform: scale(0.1);\n                transform: scale(0.1);\n        -webkit-opacity: 0.7;             \n                opacity: 0.7;\n    }\n}\n\n@keyframes v-pulseStretchDelay\n{\n    0%,\n    80%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n    45%\n    {\n        -webkit-transform: scale(0.1);\n                transform: scale(0.1);\n        -webkit-opacity: 0.7;             \n                opacity: 0.7;\n    }\n}\n", "", {"version":3,"sources":["/./src/PulseLoader.vue.style"],"names":[],"mappings":";AAmEA;;;;;EAKA;;AAEA;;IAEA;;;QAGA,4BAAA;gBACA,oBAAA;QACA,mBAAA;gBACA,WAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;QACA,qBAAA;gBACA,aAAA;KACA;CACA;;AAEA;;IAEA;;;QAGA,4BAAA;gBACA,oBAAA;QACA,mBAAA;gBACA,WAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;QACA,qBAAA;gBACA,aAAA;KACA;CACA","file":"PulseLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-pulse v-pulse1\" v-bind:style=\"[spinnerStyle,spinnerDelay1]\">\n    </div><div class=\"v-pulse v-pulse2\" v-bind:style=\"[spinnerStyle,spinnerDelay2]\">\n    </div><div class=\"v-pulse v-pulse3\" v-bind:style=\"[spinnerStyle,spinnerDelay3]\">\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'PulseLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    size: {\n      type: String,\n      default: '15px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n      \tbackgroundColor: this.color,\n      \twidth: this.size,\n        height: this.size,\n      \tmargin: this.margin,\n      \tborderRadius: this.radius,\n        display: 'inline-block',\n        animationName: 'v-pulseStretchDelay',\n        animationDuration: '0.75s',\n        animationIterationCount: 'infinite',\n        animationTimingFunction: 'cubic-bezier(.2,.68,.18,1.08)',\n        animationFillMode: 'both'\n      },\n      spinnerDelay1: {\n        animationDelay: '0.12s'\n      },\n      spinnerDelay2: {\n        animationDelay: '0.24s'\n      },\n      spinnerDelay3: {\n        animationDelay: '0.36s'\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n/*.v-spinner\n{\n    margin: 100px auto;\n    text-align: center;\n}\n*/\n\n@-webkit-keyframes v-pulseStretchDelay\n{\n    0%,\n    80%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n    45%\n    {\n        -webkit-transform: scale(0.1);\n                transform: scale(0.1);\n        -webkit-opacity: 0.7;             \n                opacity: 0.7;\n    }\n}\n\n@keyframes v-pulseStretchDelay\n{\n    0%,\n    80%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n    45%\n    {\n        -webkit-transform: scale(0.1);\n                transform: scale(0.1);\n        -webkit-opacity: 0.7;             \n                opacity: 0.7;\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 4 */
-/***/ function(module, exports) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	// css base code, injected by the css-loader
-	module.exports = function() {
-		var list = [];
-	
-		// return the list of modules as css string
-		list.toString = function toString() {
-			var result = [];
-			for(var i = 0; i < this.length; i++) {
-				var item = this[i];
-				if(item[2]) {
-					result.push("@media " + item[2] + "{" + item[1] + "}");
-				} else {
-					result.push(item[1]);
-				}
-			}
-			return result.join("");
-		};
-	
-		// import a list of modules into the list
-		list.i = function(modules, mediaQuery) {
-			if(typeof modules === "string")
-				modules = [[null, modules, ""]];
-			var alreadyImportedModules = {};
-			for(var i = 0; i < this.length; i++) {
-				var id = this[i][0];
-				if(typeof id === "number")
-					alreadyImportedModules[id] = true;
-			}
-			for(i = 0; i < modules.length; i++) {
-				var item = modules[i];
-				// skip already imported module
-				// this implementation is not 100% perfect for weird media query combinations
-				//  when a module is imported multiple times with different media queries.
-				//  I hope this will never occur (Hey this way we have smaller bundles)
-				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-					if(mediaQuery && !item[2]) {
-						item[2] = mediaQuery;
-					} else if(mediaQuery) {
-						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-					}
-					list.push(item);
-				}
-			}
-		};
-		return list;
-	};
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	var stylesInDom = {},
-		memoize = function(fn) {
-			var memo;
-			return function () {
-				if (typeof memo === "undefined") memo = fn.apply(this, arguments);
-				return memo;
-			};
-		},
-		isOldIE = memoize(function() {
-			return /msie [6-9]\b/.test(self.navigator.userAgent.toLowerCase());
-		}),
-		getHeadElement = memoize(function () {
-			return document.head || document.getElementsByTagName("head")[0];
-		}),
-		singletonElement = null,
-		singletonCounter = 0,
-		styleElementsInsertedAtTop = [];
-	
-	module.exports = function(list, options) {
-		if(false) {
-			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
-		}
-	
-		options = options || {};
-		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-		// tags it will allow on a page
-		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
-	
-		// By default, add <style> tags to the bottom of <head>.
-		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
-	
-		var styles = listToStyles(list);
-		addStylesToDom(styles, options);
-	
-		return function update(newList) {
-			var mayRemove = [];
-			for(var i = 0; i < styles.length; i++) {
-				var item = styles[i];
-				var domStyle = stylesInDom[item.id];
-				domStyle.refs--;
-				mayRemove.push(domStyle);
-			}
-			if(newList) {
-				var newStyles = listToStyles(newList);
-				addStylesToDom(newStyles, options);
-			}
-			for(var i = 0; i < mayRemove.length; i++) {
-				var domStyle = mayRemove[i];
-				if(domStyle.refs === 0) {
-					for(var j = 0; j < domStyle.parts.length; j++)
-						domStyle.parts[j]();
-					delete stylesInDom[domStyle.id];
-				}
-			}
-		};
-	}
-	
-	function addStylesToDom(styles, options) {
-		for(var i = 0; i < styles.length; i++) {
-			var item = styles[i];
-			var domStyle = stylesInDom[item.id];
-			if(domStyle) {
-				domStyle.refs++;
-				for(var j = 0; j < domStyle.parts.length; j++) {
-					domStyle.parts[j](item.parts[j]);
-				}
-				for(; j < item.parts.length; j++) {
-					domStyle.parts.push(addStyle(item.parts[j], options));
-				}
-			} else {
-				var parts = [];
-				for(var j = 0; j < item.parts.length; j++) {
-					parts.push(addStyle(item.parts[j], options));
-				}
-				stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
-			}
-		}
-	}
-	
-	function listToStyles(list) {
-		var styles = [];
-		var newStyles = {};
-		for(var i = 0; i < list.length; i++) {
-			var item = list[i];
-			var id = item[0];
-			var css = item[1];
-			var media = item[2];
-			var sourceMap = item[3];
-			var part = {css: css, media: media, sourceMap: sourceMap};
-			if(!newStyles[id])
-				styles.push(newStyles[id] = {id: id, parts: [part]});
-			else
-				newStyles[id].parts.push(part);
-		}
-		return styles;
-	}
-	
-	function insertStyleElement(options, styleElement) {
-		var head = getHeadElement();
-		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
-		if (options.insertAt === "top") {
-			if(!lastStyleElementInsertedAtTop) {
-				head.insertBefore(styleElement, head.firstChild);
-			} else if(lastStyleElementInsertedAtTop.nextSibling) {
-				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
-			} else {
-				head.appendChild(styleElement);
-			}
-			styleElementsInsertedAtTop.push(styleElement);
-		} else if (options.insertAt === "bottom") {
-			head.appendChild(styleElement);
-		} else {
-			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
-		}
-	}
-	
-	function removeStyleElement(styleElement) {
-		styleElement.parentNode.removeChild(styleElement);
-		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
-		if(idx >= 0) {
-			styleElementsInsertedAtTop.splice(idx, 1);
-		}
-	}
-	
-	function createStyleElement(options) {
-		var styleElement = document.createElement("style");
-		styleElement.type = "text/css";
-		insertStyleElement(options, styleElement);
-		return styleElement;
-	}
-	
-	function createLinkElement(options) {
-		var linkElement = document.createElement("link");
-		linkElement.rel = "stylesheet";
-		insertStyleElement(options, linkElement);
-		return linkElement;
-	}
-	
-	function addStyle(obj, options) {
-		var styleElement, update, remove;
-	
-		if (options.singleton) {
-			var styleIndex = singletonCounter++;
-			styleElement = singletonElement || (singletonElement = createStyleElement(options));
-			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
-			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
-		} else if(obj.sourceMap &&
-			typeof URL === "function" &&
-			typeof URL.createObjectURL === "function" &&
-			typeof URL.revokeObjectURL === "function" &&
-			typeof Blob === "function" &&
-			typeof btoa === "function") {
-			styleElement = createLinkElement(options);
-			update = updateLink.bind(null, styleElement);
-			remove = function() {
-				removeStyleElement(styleElement);
-				if(styleElement.href)
-					URL.revokeObjectURL(styleElement.href);
-			};
-		} else {
-			styleElement = createStyleElement(options);
-			update = applyToTag.bind(null, styleElement);
-			remove = function() {
-				removeStyleElement(styleElement);
-			};
-		}
-	
-		update(obj);
-	
-		return function updateStyle(newObj) {
-			if(newObj) {
-				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
-					return;
-				update(obj = newObj);
-			} else {
-				remove();
-			}
-		};
-	}
-	
-	var replaceText = (function () {
-		var textStore = [];
-	
-		return function (index, replacement) {
-			textStore[index] = replacement;
-			return textStore.filter(Boolean).join('\n');
-		};
-	})();
-	
-	function applyToSingletonTag(styleElement, index, remove, obj) {
-		var css = remove ? "" : obj.css;
-	
-		if (styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = replaceText(index, css);
-		} else {
-			var cssNode = document.createTextNode(css);
-			var childNodes = styleElement.childNodes;
-			if (childNodes[index]) styleElement.removeChild(childNodes[index]);
-			if (childNodes.length) {
-				styleElement.insertBefore(cssNode, childNodes[index]);
-			} else {
-				styleElement.appendChild(cssNode);
-			}
-		}
-	}
-	
-	function applyToTag(styleElement, obj) {
-		var css = obj.css;
-		var media = obj.media;
-	
-		if(media) {
-			styleElement.setAttribute("media", media)
-		}
-	
-		if(styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = css;
-		} else {
-			while(styleElement.firstChild) {
-				styleElement.removeChild(styleElement.firstChild);
-			}
-			styleElement.appendChild(document.createTextNode(css));
-		}
-	}
-	
-	function updateLink(linkElement, obj) {
-		var css = obj.css;
-		var sourceMap = obj.sourceMap;
-	
-		if(sourceMap) {
-			// http://stackoverflow.com/a/26603875
-			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
-		}
-	
-		var blob = new Blob([css], { type: "text/css" });
-	
-		var oldSrc = linkElement.href;
-	
-		linkElement.href = URL.createObjectURL(blob);
-	
-		if(oldSrc)
-			URL.revokeObjectURL(oldSrc);
-	}
-
-
-/***/ },
-/* 6 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-pulse v-pulse1" v-bind:style="[spinnerStyle,spinnerDelay1]">
-	//     </div><div class="v-pulse v-pulse2" v-bind:style="[spinnerStyle,spinnerDelay2]">
-	//     </div><div class="v-pulse v-pulse3" v-bind:style="[spinnerStyle,spinnerDelay3]">
-	//     </div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'PulseLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '15px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        backgroundColor: this.color,
-	        width: this.size,
-	        height: this.size,
-	        margin: this.margin,
-	        borderRadius: this.radius,
-	        display: 'inline-block',
-	        animationName: 'v-pulseStretchDelay',
-	        animationDuration: '0.75s',
-	        animationIterationCount: 'infinite',
-	        animationTimingFunction: 'cubic-bezier(.2,.68,.18,1.08)',
-	        animationFillMode: 'both'
-	      },
-	      spinnerDelay1: {
-	        animationDelay: '0.12s'
-	      },
-	      spinnerDelay2: {
-	        animationDelay: '0.24s'
-	      },
-	      spinnerDelay3: {
-	        animationDelay: '0.36s'
-	      }
-	    };
-	  }
-	};
-	// </script>
-	//
-	// <style>
-	// /*.v-spinner
-	// {
-	//     margin: 100px auto;
-	//     text-align: center;
-	// }
-	// */
-	//
-	// @-webkit-keyframes v-pulseStretchDelay
-	// {
-	//     0%,
-	//     80%
-	//     {
-	//         -webkit-transform: scale(1);
-	//                 transform: scale(1);
-	//         -webkit-opacity: 1;             
-	//                 opacity: 1;
-	//     }
-	//     45%
-	//     {
-	//         -webkit-transform: scale(0.1);
-	//                 transform: scale(0.1);
-	//         -webkit-opacity: 0.7;             
-	//                 opacity: 0.7;
-	//     }
-	// }
-	//
-	// @keyframes v-pulseStretchDelay
-	// {
-	//     0%,
-	//     80%
-	//     {
-	//         -webkit-transform: scale(1);
-	//                 transform: scale(1);
-	//         -webkit-opacity: 1;             
-	//                 opacity: 1;
-	//     }
-	//     45%
-	//     {
-	//         -webkit-transform: scale(0.1);
-	//                 transform: scale(0.1);
-	//         -webkit-opacity: 0.7;             
-	//                 opacity: 0.7;
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-pulse v-pulse1\" v-bind:style=\"[spinnerStyle,spinnerDelay1]\">\n    </div><div class=\"v-pulse v-pulse2\" v-bind:style=\"[spinnerStyle,spinnerDelay2]\">\n    </div><div class=\"v-pulse v-pulse3\" v-bind:style=\"[spinnerStyle,spinnerDelay3]\">\n    </div>\n  </div>\n";
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(9)
-	__vue_script__ = __webpack_require__(11)
-	__vue_template__ = __webpack_require__(12)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/GridLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(10);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c536acea&file=GridLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./GridLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c536acea&file=GridLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./GridLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n@-webkit-keyframes v-gridStretchDelay\n{\n    0%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n    }\n    50%\n    {\n        -webkit-transform: scale(0.5);\n                transform: scale(0.5);\n        -webkit-opacity: 0.7;             \n                opacity: 0.7;\n    }\n    100%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n\n@keyframes v-gridStretchDelay\n{\n    0%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n    }\n    50%\n    {\n        -webkit-transform: scale(0.5);\n                transform: scale(0.5);\n        -webkit-opacity: 0.7;             \n                opacity: 0.7;\n    }\n    100%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n", "", {"version":3,"sources":["/./src/GridLoader.vue.style"],"names":[],"mappings":";AA2IA;;IAEA;;QAEA,4BAAA;gBACA,oBAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;QACA,qBAAA;gBACA,aAAA;KACA;IACA;;QAEA,4BAAA;gBACA,oBAAA;QACA,mBAAA;gBACA,WAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,4BAAA;gBACA,oBAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;QACA,qBAAA;gBACA,aAAA;KACA;IACA;;QAEA,4BAAA;gBACA,oBAAA;QACA,mBAAA;gBACA,WAAA;KACA;CACA","file":"GridLoader.vue","sourcesContent":["<template>\n  <div class=\"v-spinner\" v-bind:style=\"containerStyle\" v-show=\"loading\">\n    <div class=\"v-grid v-grid1\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle1]\">\n    </div><div class=\"v-grid v-grid2\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle2]\">\n    </div><div class=\"v-grid v-grid3\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle3]\">\n    </div><div class=\"v-grid v-grid4\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle4]\">\n    </div><div class=\"v-grid v-grid5\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle5]\">\n    </div><div class=\"v-grid v-grid6\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle6]\">\n    </div><div class=\"v-grid v-grid7\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle7]\">\n    </div><div class=\"v-grid v-grid8\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle8]\">\n    </div><div class=\"v-grid v-grid9\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle9]\">\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'GridLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    size: {\n      type: String,\n      default: '15px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n        backgroundColor: this.color,\n        width: this.size,\n        height: this.size,\n        margin: this.margin,\n        borderRadius: this.radius\n      }\n    }\n  },\n  computed: {\n    animationStyle () {\n      return {\n        animationName: 'v-gridStretchDelay',\n        animationIterationCount: 'infinite',\n        animationTimingFunction: 'ease',\n        animationFillMode: 'both',\n        display: 'inline-block'\n      }\n    },\n    animationStyle1 () {\n      return {\n        animationDelay: this.delay(),\n        animationDuration: this.duration()\n      }\n    },\n    animationStyle2 () {\n      return {\n        animationDelay: this.delay(),\n        animationDuration: this.duration()\n      }\n    },\n    animationStyle3 () {\n      return {\n        animationDelay: this.delay(),\n        animationDuration: this.duration()\n      }\n    },\n    animationStyle4 () {\n      return {\n        animationDelay: this.delay(),\n        animationDuration: this.duration()\n      }\n    },\n    animationStyle5 () {\n      return {\n        animationDelay: this.delay(),\n        animationDuration: this.duration()\n      }\n    },\n    animationStyle6 () {\n      return {\n        animationDelay: this.delay(),\n        animationDuration: this.duration()\n      }\n    },\n    animationStyle7 () {\n      return {\n        animationDelay: this.delay(),\n        animationDuration: this.duration()\n      }\n    },\n    animationStyle8 () {\n      return {\n        animationDelay: this.delay(),\n        animationDuration: this.duration()\n      }\n    },\n    animationStyle9 () {\n      return {\n        animationDelay: this.delay(),\n        animationDuration: this.duration()\n      }\n    },\n    containerStyle () {\n      return {\n        width: parseFloat(this.size) * 3 + parseFloat(this.margin) * 6 + 'px',\n        fontSize: 0\n      }\n    }\n  },\n  methods: {\n    random (value) {\n      return Math.random() * value\n    },\n    delay () {\n      return ((this.random(100) / 100) - 0.2) + 's'\n    },\n    duration () {\n      return ((this.random(100) / 100) + 0.6) + 's'\n    },\n  }\n}\n</script>\n\n<style>\n@-webkit-keyframes v-gridStretchDelay\n{\n    0%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n    }\n    50%\n    {\n        -webkit-transform: scale(0.5);\n                transform: scale(0.5);\n        -webkit-opacity: 0.7;             \n                opacity: 0.7;\n    }\n    100%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n\n@keyframes v-gridStretchDelay\n{\n    0%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n    }\n    50%\n    {\n        -webkit-transform: scale(0.5);\n                transform: scale(0.5);\n        -webkit-opacity: 0.7;             \n                opacity: 0.7;\n    }\n    100%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 11 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	//   <div class="v-spinner" v-bind:style="containerStyle" v-show="loading">
-	//     <div class="v-grid v-grid1" v-bind:style="[spinnerStyle,animationStyle,animationStyle1]">
-	//     </div><div class="v-grid v-grid2" v-bind:style="[spinnerStyle,animationStyle,animationStyle2]">
-	//     </div><div class="v-grid v-grid3" v-bind:style="[spinnerStyle,animationStyle,animationStyle3]">
-	//     </div><div class="v-grid v-grid4" v-bind:style="[spinnerStyle,animationStyle,animationStyle4]">
-	//     </div><div class="v-grid v-grid5" v-bind:style="[spinnerStyle,animationStyle,animationStyle5]">
-	//     </div><div class="v-grid v-grid6" v-bind:style="[spinnerStyle,animationStyle,animationStyle6]">
-	//     </div><div class="v-grid v-grid7" v-bind:style="[spinnerStyle,animationStyle,animationStyle7]">
-	//     </div><div class="v-grid v-grid8" v-bind:style="[spinnerStyle,animationStyle,animationStyle8]">
-	//     </div><div class="v-grid v-grid9" v-bind:style="[spinnerStyle,animationStyle,animationStyle9]">
-	//     </div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'GridLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '15px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        backgroundColor: this.color,
-	        width: this.size,
-	        height: this.size,
-	        margin: this.margin,
-	        borderRadius: this.radius
-	      }
-	    };
-	  },
-	
-	  computed: {
-	    animationStyle: function animationStyle() {
-	      return {
-	        animationName: 'v-gridStretchDelay',
-	        animationIterationCount: 'infinite',
-	        animationTimingFunction: 'ease',
-	        animationFillMode: 'both',
-	        display: 'inline-block'
-	      };
-	    },
-	    animationStyle1: function animationStyle1() {
-	      return {
-	        animationDelay: this.delay(),
-	        animationDuration: this.duration()
-	      };
-	    },
-	    animationStyle2: function animationStyle2() {
-	      return {
-	        animationDelay: this.delay(),
-	        animationDuration: this.duration()
-	      };
-	    },
-	    animationStyle3: function animationStyle3() {
-	      return {
-	        animationDelay: this.delay(),
-	        animationDuration: this.duration()
-	      };
-	    },
-	    animationStyle4: function animationStyle4() {
-	      return {
-	        animationDelay: this.delay(),
-	        animationDuration: this.duration()
-	      };
-	    },
-	    animationStyle5: function animationStyle5() {
-	      return {
-	        animationDelay: this.delay(),
-	        animationDuration: this.duration()
-	      };
-	    },
-	    animationStyle6: function animationStyle6() {
-	      return {
-	        animationDelay: this.delay(),
-	        animationDuration: this.duration()
-	      };
-	    },
-	    animationStyle7: function animationStyle7() {
-	      return {
-	        animationDelay: this.delay(),
-	        animationDuration: this.duration()
-	      };
-	    },
-	    animationStyle8: function animationStyle8() {
-	      return {
-	        animationDelay: this.delay(),
-	        animationDuration: this.duration()
-	      };
-	    },
-	    animationStyle9: function animationStyle9() {
-	      return {
-	        animationDelay: this.delay(),
-	        animationDuration: this.duration()
-	      };
-	    },
-	    containerStyle: function containerStyle() {
-	      return {
-	        width: parseFloat(this.size) * 3 + parseFloat(this.margin) * 6 + 'px',
-	        fontSize: 0
-	      };
-	    }
-	  },
-	  methods: {
-	    random: function random(value) {
-	      return Math.random() * value;
-	    },
-	    delay: function delay() {
-	      return this.random(100) / 100 - 0.2 + 's';
-	    },
-	    duration: function duration() {
-	      return this.random(100) / 100 + 0.6 + 's';
-	    }
-	  }
-	};
-	// </script>
-	//
-	// <style>
-	// @-webkit-keyframes v-gridStretchDelay
-	// {
-	//     0%
-	//     {
-	//         -webkit-transform: scale(1);
-	//                 transform: scale(1);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: scale(0.5);
-	//                 transform: scale(0.5);
-	//         -webkit-opacity: 0.7;             
-	//                 opacity: 0.7;
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: scale(1);
-	//                 transform: scale(1);
-	//         -webkit-opacity: 1;             
-	//                 opacity: 1;
-	//     }
-	// }
-	//
-	// @keyframes v-gridStretchDelay
-	// {
-	//     0%
-	//     {
-	//         -webkit-transform: scale(1);
-	//                 transform: scale(1);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: scale(0.5);
-	//                 transform: scale(0.5);
-	//         -webkit-opacity: 0.7;             
-	//                 opacity: 0.7;
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: scale(1);
-	//                 transform: scale(1);
-	//         -webkit-opacity: 1;             
-	//                 opacity: 1;
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 12 */
-/***/ function(module, exports) {
-
-	module.exports = "\n  <div class=\"v-spinner\" v-bind:style=\"containerStyle\" v-show=\"loading\">\n    <div class=\"v-grid v-grid1\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle1]\">\n    </div><div class=\"v-grid v-grid2\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle2]\">\n    </div><div class=\"v-grid v-grid3\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle3]\">\n    </div><div class=\"v-grid v-grid4\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle4]\">\n    </div><div class=\"v-grid v-grid5\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle5]\">\n    </div><div class=\"v-grid v-grid6\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle6]\">\n    </div><div class=\"v-grid v-grid7\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle7]\">\n    </div><div class=\"v-grid v-grid8\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle8]\">\n    </div><div class=\"v-grid v-grid9\" v-bind:style=\"[spinnerStyle,animationStyle,animationStyle9]\">\n    </div>\n  </div>\n";
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(14)
-	__vue_script__ = __webpack_require__(16)
-	__vue_template__ = __webpack_require__(17)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/ClipLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(15);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-7993bd15&file=ClipLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ClipLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-7993bd15&file=ClipLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ClipLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n.v-spinner\n{\n/*\t  font-size: 10px; \n\n    width: 60px;\n    height: 40px;*/\n    /*margin: 25px auto;*/\n    text-align: center;\n \n}\n\n.v-spinner .v-clip\n{\n    -webkit-animation: v-clipDelay 0.75s 0s infinite linear;\n            animation: v-clipDelay 0.75s 0s infinite linear;\n    -webkit-animation-fill-mode: both;\n\t          animation-fill-mode: both;\n\n    display: inline-block;\n}\n\n@-webkit-keyframes v-clipDelay\n{\n    0%\n    {\n        -webkit-transform: rotate(0deg) scale(1);\n                transform: rotate(0deg) scale(1);\n    }\n    50%\n    {\n        -webkit-transform: rotate(180deg) scale(0.8);\n                transform: rotate(180deg) scale(0.8);\n    }\n    100%\n    {\n        -webkit-transform: rotate(360deg) scale(1);\n                transform: rotate(360deg) scale(1);\n    }\n}\n\n@keyframes v-clipDelay\n{\n    0%\n    {\n        -webkit-transform: rotate(0deg) scale(1);\n                transform: rotate(0deg) scale(1);\n    }\n    50%\n    {\n        -webkit-transform: rotate(180deg) scale(0.8);\n                transform: rotate(180deg) scale(0.8);\n    }\n    100%\n    {\n        -webkit-transform: rotate(360deg) scale(1);\n                transform: rotate(360deg) scale(1);\n    }\n}\n", "", {"version":3,"sources":["/./src/ClipLoader.vue.style"],"names":[],"mappings":";AA+CA;;AAEA;;;mBAGA;IACA,sBAAA;IACA,mBAAA;;CAEA;;AAEA;;IAEA,wDAAA;YACA,gDAAA;IACA,kCAAA;WACA,0BAAA;;IAEA,sBAAA;CACA;;AAEA;;IAEA;;QAEA,yCAAA;gBACA,iCAAA;KACA;IACA;;QAEA,6CAAA;gBACA,qCAAA;KACA;IACA;;QAEA,2CAAA;gBACA,mCAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,yCAAA;gBACA,iCAAA;KACA;IACA;;QAEA,6CAAA;gBACA,qCAAA;KACA;IACA;;QAEA,2CAAA;gBACA,mCAAA;KACA;CACA","file":"ClipLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-clip\" v-bind:style=\"spinnerStyle\">\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'ClipLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n  \tcolor: { \n      type: String,\n      default: '#5dc596'\n    },\n  \tsize: {\n      type: String,\n      default: '35px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  computed: {\n    spinnerStyle () {\n      return {\n        height: this.size,\n        width: this.size,\n        borderWidth: '2px',\n        borderStyle: 'solid',\n        borderColor: this.color + ' ' + this.color + ' transparent',\n        borderRadius: this.radius,\n        background: 'transparent'\n      }\n    }\n  }\n}\n</script>\n\n<style>\n.v-spinner\n{\n/*\t  font-size: 10px; \n\n    width: 60px;\n    height: 40px;*/\n    /*margin: 25px auto;*/\n    text-align: center;\n \n}\n\n.v-spinner .v-clip\n{\n    -webkit-animation: v-clipDelay 0.75s 0s infinite linear;\n            animation: v-clipDelay 0.75s 0s infinite linear;\n    -webkit-animation-fill-mode: both;\n\t          animation-fill-mode: both;\n\n    display: inline-block;\n}\n\n@-webkit-keyframes v-clipDelay\n{\n    0%\n    {\n        -webkit-transform: rotate(0deg) scale(1);\n                transform: rotate(0deg) scale(1);\n    }\n    50%\n    {\n        -webkit-transform: rotate(180deg) scale(0.8);\n                transform: rotate(180deg) scale(0.8);\n    }\n    100%\n    {\n        -webkit-transform: rotate(360deg) scale(1);\n                transform: rotate(360deg) scale(1);\n    }\n}\n\n@keyframes v-clipDelay\n{\n    0%\n    {\n        -webkit-transform: rotate(0deg) scale(1);\n                transform: rotate(0deg) scale(1);\n    }\n    50%\n    {\n        -webkit-transform: rotate(180deg) scale(0.8);\n                transform: rotate(180deg) scale(0.8);\n    }\n    100%\n    {\n        -webkit-transform: rotate(360deg) scale(1);\n                transform: rotate(360deg) scale(1);\n    }\n}\n</style>\n"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 16 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-clip" v-bind:style="spinnerStyle">
-	//     </div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'ClipLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '35px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  computed: {
-	    spinnerStyle: function spinnerStyle() {
-	      return {
-	        height: this.size,
-	        width: this.size,
-	        borderWidth: '2px',
-	        borderStyle: 'solid',
-	        borderColor: this.color + ' ' + this.color + ' transparent',
-	        borderRadius: this.radius,
-	        background: 'transparent'
-	      };
-	    }
-	  }
-	};
-	// </script>
-	//
-	// <style>
-	// .v-spinner
-	// {
-	// /*	  font-size: 10px; 
-	//
-	//     width: 60px;
-	//     height: 40px;*/
-	//     /*margin: 25px auto;*/
-	//     text-align: center;
-	//
-	// }
-	//
-	// .v-spinner .v-clip
-	// {
-	//     -webkit-animation: v-clipDelay 0.75s 0s infinite linear;
-	//             animation: v-clipDelay 0.75s 0s infinite linear;
-	//     -webkit-animation-fill-mode: both;
-	// 	          animation-fill-mode: both;
-	//
-	//     display: inline-block;
-	// }
-	//
-	// @-webkit-keyframes v-clipDelay
-	// {
-	//     0%
-	//     {
-	//         -webkit-transform: rotate(0deg) scale(1);
-	//                 transform: rotate(0deg) scale(1);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: rotate(180deg) scale(0.8);
-	//                 transform: rotate(180deg) scale(0.8);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: rotate(360deg) scale(1);
-	//                 transform: rotate(360deg) scale(1);
-	//     }
-	// }
-	//
-	// @keyframes v-clipDelay
-	// {
-	//     0%
-	//     {
-	//         -webkit-transform: rotate(0deg) scale(1);
-	//                 transform: rotate(0deg) scale(1);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: rotate(180deg) scale(0.8);
-	//                 transform: rotate(180deg) scale(0.8);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: rotate(360deg) scale(1);
-	//                 transform: rotate(360deg) scale(1);
-	//     }
-	// }
-	// </style>
-	//
-	/* generated by vue-loader */
-
-/***/ },
-/* 17 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-clip\" v-bind:style=\"spinnerStyle\">\n    </div>\n  </div>\n";
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(19)
-	__vue_script__ = __webpack_require__(21)
-	__vue_template__ = __webpack_require__(22)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/RiseLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(20);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5db37d64&file=RiseLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RiseLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5db37d64&file=RiseLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RiseLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n.v-spinner\n{\n/*\t  font-size: 10px; \n\n    width: 60px;\n    height: 40px;*/\n    /*margin: 25px auto;*/\n    text-align: center;\n \n}\n\n.v-spinner .v-rise-odd\n{\n    -webkit-animation: v-riseOddDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);\n            animation: v-riseOddDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);\n    -webkit-animation-fill-mode: both;\n\t        animation-fill-mode: both;\n\n    display: inline-block;\n}\n\n.v-spinner .v-rise-even\n{\n    -webkit-animation: v-riseEvenDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);\n            animation: v-riseEvenDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);\n    -webkit-animation-fill-mode: both;\n            animation-fill-mode: both;\n\n    display: inline-block;\n}\n\n@-webkit-keyframes v-riseOddDelay\n{\n    25\n    {\n        -webkit-transform: translateY(30px);\n                transform: translateY(30px);\n    }\n    0%\n    {\n        -webkit-transform: scale(0.4);\n                transform: scale(0.4);\n    }\n    50%\n    {\n        -webkit-transform: scale(1.1);\n                transform: scale(1.1);\n    }\n    75%\n    {\n        -webkit-transform: translateY(-30px);\n                transform: translateY(-30px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0) scale(0.75);\n                transform: translateY(0) scale(0.75);\n    }\n}\n\n@keyframes v-riseOddDelay\n{\n    25\n    {\n        -webkit-transform: translateY(30px);\n                transform: translateY(30px);\n    }\n    0%\n    {\n        -webkit-transform: scale(0.4);\n                transform: scale(0.4);\n    }\n    50%\n    {\n        -webkit-transform: scale(1.1);\n                transform: scale(1.1);\n    }\n    75%\n    {\n        -webkit-transform: translateY(-30px);\n                transform: translateY(-30px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0) scale(0.75);\n                transform: translateY(0) scale(0.75);\n    }\n}\n\n@-webkit-keyframes v-riseEvenDelay\n{\n    25\n    {\n        -webkit-transform: translateY(-30px);\n                transform: translateY(-30px);\n    }\n    0%\n    {\n        -webkit-transform: scale(1.1);\n                transform: scale(1.1);\n    }\n    50%\n    {\n        -webkit-transform: scale(0.4);\n                transform: scale(0.4);\n    }\n    75%\n    {\n        -webkit-transform: translateY(30px);\n                transform: translateY(30px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0) scale(1.0);\n                transform: translateY(0) scale(1.0);\n    }\n}\n\n@keyframes v-riseEvenDelay\n{\n    25\n    {\n        -webkit-transform: translateY(-30px);\n                transform: translateY(-30px);\n    }\n    0%\n    {\n        -webkit-transform: scale(1.1);\n                transform: scale(1.1);\n    }\n    50%\n    {\n        -webkit-transform: scale(0.4);\n                transform: scale(0.4);\n    }\n    75%\n    {\n        -webkit-transform: translateY(30px);\n                transform: translateY(30px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0) scale(1.0);\n                transform: translateY(0) scale(1.0);\n    }\n}\n", "", {"version":3,"sources":["/./src/RiseLoader.vue.style"],"names":[],"mappings":";AAsDA;;AAEA;;;mBAGA;IACA,sBAAA;IACA,mBAAA;;CAEA;;AAEA;;IAEA,6EAAA;YACA,qEAAA;IACA,kCAAA;SACA,0BAAA;;IAEA,sBAAA;CACA;;AAEA;;IAEA,8EAAA;YACA,sEAAA;IACA,kCAAA;YACA,0BAAA;;IAEA,sBAAA;CACA;;AAEA;;IAEA;;QAEA,oCAAA;gBACA,4BAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;KACA;IACA;;QAEA,qCAAA;gBACA,6BAAA;KACA;IACA;;QAEA,6CAAA;gBACA,qCAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,oCAAA;gBACA,4BAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;KACA;IACA;;QAEA,qCAAA;gBACA,6BAAA;KACA;IACA;;QAEA,6CAAA;gBACA,qCAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,qCAAA;gBACA,6BAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;KACA;IACA;;QAEA,oCAAA;gBACA,4BAAA;KACA;IACA;;QAEA,4CAAA;gBACA,oCAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,qCAAA;gBACA,6BAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;KACA;IACA;;QAEA,oCAAA;gBACA,4BAAA;KACA;IACA;;QAEA,4CAAA;gBACA,oCAAA;KACA;CACA","file":"RiseLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-rise v-rise-odd\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-rise v-rise-even\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-rise v-rise-odd\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-rise v-rise-even\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-rise v-rise-odd\" v-bind:style=\"spinnerStyle\">\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'RiseLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n  \tcolor: { \n      type: String,\n      default: '#5dc596'\n    },\n  \tsize: {\n      type: String,\n      default: '15px'\n    },\n  \tmargin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n      \tbackgroundColor: this.color,\n      \theight: this.size,\n     \twidth: this.size,\n      \tmargin: this.margin,\n      \tborderRadius: this.radius\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n.v-spinner\n{\n/*\t  font-size: 10px; \n\n    width: 60px;\n    height: 40px;*/\n    /*margin: 25px auto;*/\n    text-align: center;\n \n}\n\n.v-spinner .v-rise-odd\n{\n    -webkit-animation: v-riseOddDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);\n            animation: v-riseOddDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);\n    -webkit-animation-fill-mode: both;\n\t        animation-fill-mode: both;\n\n    display: inline-block;\n}\n\n.v-spinner .v-rise-even\n{\n    -webkit-animation: v-riseEvenDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);\n            animation: v-riseEvenDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);\n    -webkit-animation-fill-mode: both;\n            animation-fill-mode: both;\n\n    display: inline-block;\n}\n\n@-webkit-keyframes v-riseOddDelay\n{\n    25\n    {\n        -webkit-transform: translateY(30px);\n                transform: translateY(30px);\n    }\n    0%\n    {\n        -webkit-transform: scale(0.4);\n                transform: scale(0.4);\n    }\n    50%\n    {\n        -webkit-transform: scale(1.1);\n                transform: scale(1.1);\n    }\n    75%\n    {\n        -webkit-transform: translateY(-30px);\n                transform: translateY(-30px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0) scale(0.75);\n                transform: translateY(0) scale(0.75);\n    }\n}\n\n@keyframes v-riseOddDelay\n{\n    25\n    {\n        -webkit-transform: translateY(30px);\n                transform: translateY(30px);\n    }\n    0%\n    {\n        -webkit-transform: scale(0.4);\n                transform: scale(0.4);\n    }\n    50%\n    {\n        -webkit-transform: scale(1.1);\n                transform: scale(1.1);\n    }\n    75%\n    {\n        -webkit-transform: translateY(-30px);\n                transform: translateY(-30px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0) scale(0.75);\n                transform: translateY(0) scale(0.75);\n    }\n}\n\n@-webkit-keyframes v-riseEvenDelay\n{\n    25\n    {\n        -webkit-transform: translateY(-30px);\n                transform: translateY(-30px);\n    }\n    0%\n    {\n        -webkit-transform: scale(1.1);\n                transform: scale(1.1);\n    }\n    50%\n    {\n        -webkit-transform: scale(0.4);\n                transform: scale(0.4);\n    }\n    75%\n    {\n        -webkit-transform: translateY(30px);\n                transform: translateY(30px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0) scale(1.0);\n                transform: translateY(0) scale(1.0);\n    }\n}\n\n@keyframes v-riseEvenDelay\n{\n    25\n    {\n        -webkit-transform: translateY(-30px);\n                transform: translateY(-30px);\n    }\n    0%\n    {\n        -webkit-transform: scale(1.1);\n                transform: scale(1.1);\n    }\n    50%\n    {\n        -webkit-transform: scale(0.4);\n                transform: scale(0.4);\n    }\n    75%\n    {\n        -webkit-transform: translateY(30px);\n                transform: translateY(30px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0) scale(1.0);\n                transform: translateY(0) scale(1.0);\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 21 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-rise v-rise-odd" v-bind:style="spinnerStyle">
-	//     </div><div class="v-rise v-rise-even" v-bind:style="spinnerStyle">
-	//     </div><div class="v-rise v-rise-odd" v-bind:style="spinnerStyle">
-	//     </div><div class="v-rise v-rise-even" v-bind:style="spinnerStyle">
-	//     </div><div class="v-rise v-rise-odd" v-bind:style="spinnerStyle">
-	//     </div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'RiseLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '15px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        backgroundColor: this.color,
-	        height: this.size,
-	        width: this.size,
-	        margin: this.margin,
-	        borderRadius: this.radius
-	      }
-	    };
-	  }
-	};
-	// </script>
-	//
-	// <style>
-	// .v-spinner
-	// {
-	// /*	  font-size: 10px; 
-	//
-	//     width: 60px;
-	//     height: 40px;*/
-	//     /*margin: 25px auto;*/
-	//     text-align: center;
-	//
-	// }
-	//
-	// .v-spinner .v-rise-odd
-	// {
-	//     -webkit-animation: v-riseOddDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);
-	//             animation: v-riseOddDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);
-	//     -webkit-animation-fill-mode: both;
-	// 	        animation-fill-mode: both;
-	//
-	//     display: inline-block;
-	// }
-	//
-	// .v-spinner .v-rise-even
-	// {
-	//     -webkit-animation: v-riseEvenDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);
-	//             animation: v-riseEvenDelay 1s 0s infinite cubic-bezier(.15,.46,.9,.6);
-	//     -webkit-animation-fill-mode: both;
-	//             animation-fill-mode: both;
-	//
-	//     display: inline-block;
-	// }
-	//
-	// @-webkit-keyframes v-riseOddDelay
-	// {
-	//     25
-	//     {
-	//         -webkit-transform: translateY(30px);
-	//                 transform: translateY(30px);
-	//     }
-	//     0%
-	//     {
-	//         -webkit-transform: scale(0.4);
-	//                 transform: scale(0.4);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: scale(1.1);
-	//                 transform: scale(1.1);
-	//     }
-	//     75%
-	//     {
-	//         -webkit-transform: translateY(-30px);
-	//                 transform: translateY(-30px);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: translateY(0) scale(0.75);
-	//                 transform: translateY(0) scale(0.75);
-	//     }
-	// }
-	//
-	// @keyframes v-riseOddDelay
-	// {
-	//     25
-	//     {
-	//         -webkit-transform: translateY(30px);
-	//                 transform: translateY(30px);
-	//     }
-	//     0%
-	//     {
-	//         -webkit-transform: scale(0.4);
-	//                 transform: scale(0.4);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: scale(1.1);
-	//                 transform: scale(1.1);
-	//     }
-	//     75%
-	//     {
-	//         -webkit-transform: translateY(-30px);
-	//                 transform: translateY(-30px);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: translateY(0) scale(0.75);
-	//                 transform: translateY(0) scale(0.75);
-	//     }
-	// }
-	//
-	// @-webkit-keyframes v-riseEvenDelay
-	// {
-	//     25
-	//     {
-	//         -webkit-transform: translateY(-30px);
-	//                 transform: translateY(-30px);
-	//     }
-	//     0%
-	//     {
-	//         -webkit-transform: scale(1.1);
-	//                 transform: scale(1.1);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: scale(0.4);
-	//                 transform: scale(0.4);
-	//     }
-	//     75%
-	//     {
-	//         -webkit-transform: translateY(30px);
-	//                 transform: translateY(30px);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: translateY(0) scale(1.0);
-	//                 transform: translateY(0) scale(1.0);
-	//     }
-	// }
-	//
-	// @keyframes v-riseEvenDelay
-	// {
-	//     25
-	//     {
-	//         -webkit-transform: translateY(-30px);
-	//                 transform: translateY(-30px);
-	//     }
-	//     0%
-	//     {
-	//         -webkit-transform: scale(1.1);
-	//                 transform: scale(1.1);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: scale(0.4);
-	//                 transform: scale(0.4);
-	//     }
-	//     75%
-	//     {
-	//         -webkit-transform: translateY(30px);
-	//                 transform: translateY(30px);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: translateY(0) scale(1.0);
-	//                 transform: translateY(0) scale(1.0);
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 22 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-rise v-rise-odd\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-rise v-rise-even\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-rise v-rise-odd\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-rise v-rise-even\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-rise v-rise-odd\" v-bind:style=\"spinnerStyle\">\n    </div>\n  </div>\n";
-
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(24)
-	__vue_script__ = __webpack_require__(26)
-	__vue_template__ = __webpack_require__(27)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/BeatLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(25);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-282665fb&file=BeatLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BeatLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-282665fb&file=BeatLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BeatLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n.v-spinner .v-beat\n{\n    -webkit-animation: v-beatStretchDelay 0.7s infinite linear;\n            animation: v-beatStretchDelay 0.7s infinite linear;\n    -webkit-animation-fill-mode: both;\n\t          animation-fill-mode: both;\n    display: inline-block;         \n}\n\n.v-spinner .v-beat-odd\n{\n  -webkit-animation-delay: 0s;\n          animation-delay: 0s;\n}\n.v-spinner .v-beat-even\n{\n  -webkit-animation-delay: 0.35s;\n          animation-delay: 0.35s;\n}\n\n@-webkit-keyframes v-beatStretchDelay\n{\n    50%\n    {\n        -webkit-transform: scale(0.75);\n                transform: scale(0.75);\n        -webkit-opacity: 0.2;             \n                opacity: 0.2;\n    }\n    100%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n\n@keyframes v-beatStretchDelay\n{\n    50%\n    {\n        -webkit-transform: scale(0.75);\n                transform: scale(0.75);\n        -webkit-opacity: 0.2;             \n                opacity: 0.2;\n    }\n    100%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n", "", {"version":3,"sources":["/./src/BeatLoader.vue.style"],"names":[],"mappings":";;AAqDA;;IAEA,2DAAA;YACA,mDAAA;IACA,kCAAA;WACA,0BAAA;IACA,sBAAA;CACA;;AAEA;;EAEA,4BAAA;UAAA,oBAAA;CACA;AACA;;EAEA,+BAAA;UAAA,uBAAA;CACA;;AAEA;;IAEA;;QAEA,+BAAA;gBACA,uBAAA;QACA,qBAAA;gBACA,aAAA;KACA;IACA;;QAEA,4BAAA;gBACA,oBAAA;QACA,mBAAA;gBACA,WAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,+BAAA;gBACA,uBAAA;QACA,qBAAA;gBACA,aAAA;KACA;IACA;;QAEA,4BAAA;gBACA,oBAAA;QACA,mBAAA;gBACA,WAAA;KACA;CACA","file":"BeatLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-beat v-beat-odd\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-beat v-beat-even\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-beat v-beat-odd\" v-bind:style=\"spinnerStyle\">\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'BeatLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    size: {\n      type: String,\n      default: '15px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n      \tbackgroundColor: this.color,\n      \theight: this.size,\n     \t\twidth: this.size,\n      \tmargin: this.margin,\n      \tborderRadius: this.radius\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n\n.v-spinner .v-beat\n{\n    -webkit-animation: v-beatStretchDelay 0.7s infinite linear;\n            animation: v-beatStretchDelay 0.7s infinite linear;\n    -webkit-animation-fill-mode: both;\n\t          animation-fill-mode: both;\n    display: inline-block;         \n}\n\n.v-spinner .v-beat-odd\n{\n  animation-delay: 0s;\n}\n.v-spinner .v-beat-even\n{\n  animation-delay: 0.35s;\n}\n\n@-webkit-keyframes v-beatStretchDelay\n{\n    50%\n    {\n        -webkit-transform: scale(0.75);\n                transform: scale(0.75);\n        -webkit-opacity: 0.2;             \n                opacity: 0.2;\n    }\n    100%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n\n@keyframes v-beatStretchDelay\n{\n    50%\n    {\n        -webkit-transform: scale(0.75);\n                transform: scale(0.75);\n        -webkit-opacity: 0.2;             \n                opacity: 0.2;\n    }\n    100%\n    {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 26 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-beat v-beat-odd" v-bind:style="spinnerStyle">
-	//     </div><div class="v-beat v-beat-even" v-bind:style="spinnerStyle">
-	//     </div><div class="v-beat v-beat-odd" v-bind:style="spinnerStyle">
-	//     </div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'BeatLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '15px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        backgroundColor: this.color,
-	        height: this.size,
-	        width: this.size,
-	        margin: this.margin,
-	        borderRadius: this.radius
-	      }
-	    };
-	  }
-	};
-	// </script>
-	//
-	// <style>
-	//
-	// .v-spinner .v-beat
-	// {
-	//     -webkit-animation: v-beatStretchDelay 0.7s infinite linear;
-	//             animation: v-beatStretchDelay 0.7s infinite linear;
-	//     -webkit-animation-fill-mode: both;
-	// 	          animation-fill-mode: both;
-	//     display: inline-block;         
-	// }
-	//
-	// .v-spinner .v-beat-odd
-	// {
-	//   animation-delay: 0s;
-	// }
-	// .v-spinner .v-beat-even
-	// {
-	//   animation-delay: 0.35s;
-	// }
-	//
-	// @-webkit-keyframes v-beatStretchDelay
-	// {
-	//     50%
-	//     {
-	//         -webkit-transform: scale(0.75);
-	//                 transform: scale(0.75);
-	//         -webkit-opacity: 0.2;             
-	//                 opacity: 0.2;
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: scale(1);
-	//                 transform: scale(1);
-	//         -webkit-opacity: 1;             
-	//                 opacity: 1;
-	//     }
-	// }
-	//
-	// @keyframes v-beatStretchDelay
-	// {
-	//     50%
-	//     {
-	//         -webkit-transform: scale(0.75);
-	//                 transform: scale(0.75);
-	//         -webkit-opacity: 0.2;             
-	//                 opacity: 0.2;
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: scale(1);
-	//                 transform: scale(1);
-	//         -webkit-opacity: 1;             
-	//                 opacity: 1;
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 27 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-beat v-beat-odd\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-beat v-beat-even\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-beat v-beat-odd\" v-bind:style=\"spinnerStyle\">\n    </div>\n  </div>\n";
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(29)
-	__vue_script__ = __webpack_require__(31)
-	__vue_template__ = __webpack_require__(32)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/SyncLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(30);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-4af2d2a0&file=SyncLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./SyncLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-4af2d2a0&file=SyncLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./SyncLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n@-webkit-keyframes v-syncStretchDelay\n{\n    33%\n    {\n        -webkit-transform: translateY(10px);\n                transform: translateY(10px);\n    }\n    66%\n    {\n        -webkit-transform: translateY(-10px);\n                transform: translateY(-10px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0);\n                transform: translateY(0);\n    }\n}\n\n@keyframes v-syncStretchDelay\n{\n    33%\n    {\n        -webkit-transform: translateY(10px);\n                transform: translateY(10px);\n    }\n    66%\n    {\n        -webkit-transform: translateY(-10px);\n                transform: translateY(-10px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0);\n                transform: translateY(0);\n    }\n}\n", "", {"version":3,"sources":["/./src/SyncLoader.vue.style"],"names":[],"mappings":";;AAoEA;;IAEA;;QAEA,oCAAA;gBACA,4BAAA;KACA;IACA;;QAEA,qCAAA;gBACA,6BAAA;KACA;IACA;;QAEA,iCAAA;gBACA,yBAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,oCAAA;gBACA,4BAAA;KACA;IACA;;QAEA,qCAAA;gBACA,6BAAA;KACA;IACA;;QAEA,iCAAA;gBACA,yBAAA;KACA;CACA","file":"SyncLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-sync v-sync1\" v-bind:style=\"[spinnerStyle,spinnerDelay1]\">\n    </div><div class=\"v-sync v-sync2\" v-bind:style=\"[spinnerStyle,spinnerDelay2]\">\n    </div><div class=\"v-sync v-sync3\" v-bind:style=\"[spinnerStyle,spinnerDelay3]\">\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'SyncLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    size: {\n      type: String,\n      default: '15px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n      \tbackgroundColor: this.color,\n      \theight: this.size,\n     \t\twidth: this.size,\n      \tmargin: this.margin,\n      \tborderRadius: this.radius,\n        display: 'inline-block',\n        animationName: 'v-syncStretchDelay',\n        animationDuration: '0.6s',\n        animationIterationCount: 'infinite',\n        animationTimingFunction: 'ease-in-out',\n        animationFillMode: 'both'\n      },\n      spinnerDelay1: {\n        animationDelay: '0.07s'\n      },\n      spinnerDelay2: {\n        animationDelay: '0.14s'\n      },\n      spinnerDelay3: {\n        animationDelay: '0.21s'\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n\n@-webkit-keyframes v-syncStretchDelay\n{\n    33%\n    {\n        -webkit-transform: translateY(10px);\n                transform: translateY(10px);\n    }\n    66%\n    {\n        -webkit-transform: translateY(-10px);\n                transform: translateY(-10px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0);\n                transform: translateY(0);\n    }\n}\n\n@keyframes v-syncStretchDelay\n{\n    33%\n    {\n        -webkit-transform: translateY(10px);\n                transform: translateY(10px);\n    }\n    66%\n    {\n        -webkit-transform: translateY(-10px);\n                transform: translateY(-10px);\n    }\n    100%\n    {\n        -webkit-transform: translateY(0);\n                transform: translateY(0);\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 31 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-sync v-sync1" v-bind:style="[spinnerStyle,spinnerDelay1]">
-	//     </div><div class="v-sync v-sync2" v-bind:style="[spinnerStyle,spinnerDelay2]">
-	//     </div><div class="v-sync v-sync3" v-bind:style="[spinnerStyle,spinnerDelay3]">
-	//     </div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'SyncLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '15px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        backgroundColor: this.color,
-	        height: this.size,
-	        width: this.size,
-	        margin: this.margin,
-	        borderRadius: this.radius,
-	        display: 'inline-block',
-	        animationName: 'v-syncStretchDelay',
-	        animationDuration: '0.6s',
-	        animationIterationCount: 'infinite',
-	        animationTimingFunction: 'ease-in-out',
-	        animationFillMode: 'both'
-	      },
-	      spinnerDelay1: {
-	        animationDelay: '0.07s'
-	      },
-	      spinnerDelay2: {
-	        animationDelay: '0.14s'
-	      },
-	      spinnerDelay3: {
-	        animationDelay: '0.21s'
-	      }
-	    };
-	  }
-	};
-	// </script>
-	//
-	// <style>
-	//
-	// @-webkit-keyframes v-syncStretchDelay
-	// {
-	//     33%
-	//     {
-	//         -webkit-transform: translateY(10px);
-	//                 transform: translateY(10px);
-	//     }
-	//     66%
-	//     {
-	//         -webkit-transform: translateY(-10px);
-	//                 transform: translateY(-10px);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: translateY(0);
-	//                 transform: translateY(0);
-	//     }
-	// }
-	//
-	// @keyframes v-syncStretchDelay
-	// {
-	//     33%
-	//     {
-	//         -webkit-transform: translateY(10px);
-	//                 transform: translateY(10px);
-	//     }
-	//     66%
-	//     {
-	//         -webkit-transform: translateY(-10px);
-	//                 transform: translateY(-10px);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: translateY(0);
-	//                 transform: translateY(0);
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 32 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-sync v-sync1\" v-bind:style=\"[spinnerStyle,spinnerDelay1]\">\n    </div><div class=\"v-sync v-sync2\" v-bind:style=\"[spinnerStyle,spinnerDelay2]\">\n    </div><div class=\"v-sync v-sync3\" v-bind:style=\"[spinnerStyle,spinnerDelay3]\">\n    </div>\n  </div>\n";
-
-/***/ },
-/* 33 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(34)
-	__vue_script__ = __webpack_require__(36)
-	__vue_template__ = __webpack_require__(37)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/RotateLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(35);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-16962240&file=RotateLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RotateLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-16962240&file=RotateLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RotateLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n.v-spinner .v-rotate1\n{\n    -webkit-animation: v-rotateStretchDelay 1s 0s infinite cubic-bezier(.7,-.13,.22,.86);\n            animation: v-rotateStretchDelay 1s 0s infinite cubic-bezier(.7,-.13,.22,.86);\n    -webkit-animation-fill-mode: both;\n            animation-fill-mode: both;\n    display: inline-block;\n    position: relative;\n}\n\n.v-spinner .v-rotate2\n{\n  opacity: 0.8;\n  position: absolute;\n  top: 0;\n  left: -28px;\n}\n\n.v-spinner .v-rotate3\n{\n  opacity: 0.8;\n  position: absolute;\n  top: 0;\n  left: 25px;\n}\n\n@-webkit-keyframes v-rotateStretchDelay\n{\n    0%\n    {\n        -webkit-transform: rotate(0deg);\n                transform: rotate(0deg);\n    }\n    50%\n    {\n        -webkit-transform: rotate(180deg);\n                transform: rotate(180deg);\n    }\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n\n@keyframes v-rotateStretchDelay\n{\n    0%\n    {\n        -webkit-transform: rotate(0deg);\n                transform: rotate(0deg);\n    }\n    50%\n    {\n        -webkit-transform: rotate(180deg);\n                transform: rotate(180deg);\n    }\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n", "", {"version":3,"sources":["/./src/RotateLoader.vue.style"],"names":[],"mappings":";;AAqDA;;IAEA,qFAAA;YACA,6EAAA;IACA,kCAAA;YACA,0BAAA;IACA,sBAAA;IACA,mBAAA;CACA;;AAEA;;EAEA,aAAA;EACA,mBAAA;EACA,OAAA;EACA,YAAA;CACA;;AAEA;;EAEA,aAAA;EACA,mBAAA;EACA,OAAA;EACA,WAAA;CACA;;AAEA;;IAEA;;QAEA,gCAAA;gBACA,wBAAA;KACA;IACA;;QAEA,kCAAA;gBACA,0BAAA;KACA;IACA;;QAEA,kCAAA;gBACA,0BAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,gCAAA;gBACA,wBAAA;KACA;IACA;;QAEA,kCAAA;gBACA,0BAAA;KACA;IACA;;QAEA,kCAAA;gBACA,0BAAA;KACA;CACA","file":"RotateLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-rotate v-rotate1\" v-bind:style=\"spinnerStyle\">\n    <div class=\"v-rotate v-rotate2\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-rotate v-rotate3\" v-bind:style=\"spinnerStyle\">\n    </div></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'RotateLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    size: {\n      type: String,\n      default: '15px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n      \tbackgroundColor: this.color,\n      \theight: this.size,\n     \t\twidth: this.size,\n      \tmargin: this.margin,\n      \tborderRadius: this.radius\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n\n.v-spinner .v-rotate1\n{\n    -webkit-animation: v-rotateStretchDelay 1s 0s infinite cubic-bezier(.7,-.13,.22,.86);\n            animation: v-rotateStretchDelay 1s 0s infinite cubic-bezier(.7,-.13,.22,.86);\n    -webkit-animation-fill-mode: both;\n            animation-fill-mode: both;\n    display: inline-block;\n    position: relative;\n}\n\n.v-spinner .v-rotate2\n{\n  opacity: 0.8;\n  position: absolute;\n  top: 0;\n  left: -28px;\n}\n\n.v-spinner .v-rotate3\n{\n  opacity: 0.8;\n  position: absolute;\n  top: 0;\n  left: 25px;\n}\n\n@-webkit-keyframes v-rotateStretchDelay\n{\n    0%\n    {\n        -webkit-transform: rotate(0deg);\n                transform: rotate(0deg);\n    }\n    50%\n    {\n        -webkit-transform: rotate(180deg);\n                transform: rotate(180deg);\n    }\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n\n@keyframes v-rotateStretchDelay\n{\n    0%\n    {\n        -webkit-transform: rotate(0deg);\n                transform: rotate(0deg);\n    }\n    50%\n    {\n        -webkit-transform: rotate(180deg);\n                transform: rotate(180deg);\n    }\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 36 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-rotate v-rotate1" v-bind:style="spinnerStyle">
-	//     <div class="v-rotate v-rotate2" v-bind:style="spinnerStyle">
-	//     </div><div class="v-rotate v-rotate3" v-bind:style="spinnerStyle">
-	//     </div></div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'RotateLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '15px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        backgroundColor: this.color,
-	        height: this.size,
-	        width: this.size,
-	        margin: this.margin,
-	        borderRadius: this.radius
-	      }
-	    };
-	  }
-	};
-	// </script>
-	//
-	// <style>
-	//
-	// .v-spinner .v-rotate1
-	// {
-	//     -webkit-animation: v-rotateStretchDelay 1s 0s infinite cubic-bezier(.7,-.13,.22,.86);
-	//             animation: v-rotateStretchDelay 1s 0s infinite cubic-bezier(.7,-.13,.22,.86);
-	//     -webkit-animation-fill-mode: both;
-	//             animation-fill-mode: both;
-	//     display: inline-block;
-	//     position: relative;
-	// }
-	//
-	// .v-spinner .v-rotate2
-	// {
-	//   opacity: 0.8;
-	//   position: absolute;
-	//   top: 0;
-	//   left: -28px;
-	// }
-	//
-	// .v-spinner .v-rotate3
-	// {
-	//   opacity: 0.8;
-	//   position: absolute;
-	//   top: 0;
-	//   left: 25px;
-	// }
-	//
-	// @-webkit-keyframes v-rotateStretchDelay
-	// {
-	//     0%
-	//     {
-	//         -webkit-transform: rotate(0deg);
-	//                 transform: rotate(0deg);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: rotate(180deg);
-	//                 transform: rotate(180deg);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: rotate(360deg);
-	//                 transform: rotate(360deg);
-	//     }
-	// }
-	//
-	// @keyframes v-rotateStretchDelay
-	// {
-	//     0%
-	//     {
-	//         -webkit-transform: rotate(0deg);
-	//                 transform: rotate(0deg);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: rotate(180deg);
-	//                 transform: rotate(180deg);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: rotate(360deg);
-	//                 transform: rotate(360deg);
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 37 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-rotate v-rotate1\" v-bind:style=\"spinnerStyle\">\n    <div class=\"v-rotate v-rotate2\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-rotate v-rotate3\" v-bind:style=\"spinnerStyle\">\n    </div></div>\n  </div>\n";
-
-/***/ },
-/* 38 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(39)
-	__vue_script__ = __webpack_require__(41)
-	__vue_template__ = __webpack_require__(42)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/FadeLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 39 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(40);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-533fe941&file=FadeLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FadeLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-533fe941&file=FadeLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FadeLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 40 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n.v-spinner .v-fade\n{\n    -webkit-animation: v-fadeStretchDelay 1.2s infinite ease-in-out;\n            animation: v-fadeStretchDelay 1.2s infinite ease-in-out;\n    -webkit-animation-fill-mode: both;\n\t          animation-fill-mode: both;\n    position: absolute;               \n}\n\n@-webkit-keyframes v-fadeStretchDelay\n{\n    50%\n    {\n        -webkit-opacity: 0.3;             \n                opacity: 0.3;\n    }\n    100%\n    {\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n\n@keyframes v-fadeStretchDelay\n{\n    50%\n    {\n        -webkit-opacity: 0.3;             \n                opacity: 0.3;\n    }\n    100%\n    {\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n", "", {"version":3,"sources":["/./src/FadeLoader.vue.style"],"names":[],"mappings":";;AAwIA;;IAEA,gEAAA;YACA,wDAAA;IACA,kCAAA;WACA,0BAAA;IACA,mBAAA;CACA;;AAEA;;IAEA;;QAEA,qBAAA;gBACA,aAAA;KACA;IACA;;QAEA,mBAAA;gBACA,WAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,qBAAA;gBACA,aAAA;KACA;IACA;;QAEA,mBAAA;gBACA,WAAA;KACA;CACA","file":"FadeLoader.vue","sourcesContent":["<template>\n  <div class=\"v-spinner\" v-bind:style=\"{position: 'relative', fontSize: 0}\" v-show=\"loading\">\n  <!-- <div class=\"v-spinner\" v-bind:style=\"containerStyle\"> -->\n    <div class=\"v-fade v-fade1\" v-bind:style=\"[spinnerStyle,animationStyle1]\">\n    </div><div class=\"v-fade v-fade2\" v-bind:style=\"[spinnerStyle,animationStyle2]\">\n    </div><div class=\"v-fade v-fade3\" v-bind:style=\"[spinnerStyle,animationStyle3]\">\n    </div><div class=\"v-fade v-fade4\" v-bind:style=\"[spinnerStyle,animationStyle4]\">\n    </div><div class=\"v-fade v-fade5\" v-bind:style=\"[spinnerStyle,animationStyle5]\">\n    </div><div class=\"v-fade v-fade6\" v-bind:style=\"[spinnerStyle,animationStyle6]\">\n    </div><div class=\"v-fade v-fade7\" v-bind:style=\"[spinnerStyle,animationStyle7]\">\n    </div><div class=\"v-fade v-fade8\" v-bind:style=\"[spinnerStyle,animationStyle8]\">\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'FadeLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    height: {\n      type: String,\n      default: '15px'\n    },\n    width: {\n      type: String,\n      default: '5px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '20px'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n      \tbackgroundColor: this.color,\n      \theight: this.height,\n     \t\twidth: this.width,\n      \tmargin: this.margin,\n      \tborderRadius: this.radius\n      }\n    }\n  },\n  computed: {\n    ngRadius () {\n      return '-' + this.radius\n    },\n    quarter () {\n      return (parseFloat(this.radius)/2 + parseFloat(this.radius)/5.5) + 'px'\n    },\n    ngQuarter () {\n      return '-' + this.quarter\n    },\n    animationStyle1 () {\n      return {\n        top: this.radius,\n        left: 0,\n        animationDelay: '0.12s'\n      }\n    },\n    animationStyle2 () {\n      return {\n        top: this.quarter,\n        left: this.quarter,\n        animationDelay: '0.24s',\n        transform: 'rotate(-45deg)'\n      }\n    },\n    animationStyle3 () {\n      return {\n        top: 0,\n        left: this.radius,\n        animationDelay: '0.36s',\n        transform: 'rotate(90deg)'\n      }\n    },\n    animationStyle4 () {\n      return {\n        top: this.ngQuarter,\n        left: this.quarter,\n        animationDelay: '0.48s',\n        transform: 'rotate(45deg)'\n      }\n    },\n    animationStyle5 () {\n      return {\n        top: this.ngRadius,\n        left: 0,\n        animationDelay: '0.60s'\n      }\n    },\n    animationStyle6 () {\n      return {\n        top: this.ngQuarter,\n        left: this.ngQuarter,\n        animationDelay: '0.72s',\n        transform: 'rotate(-45deg)'\n      }\n    },\n    animationStyle7 () {\n      return {\n        top: 0,\n        left: this.ngRadius,\n        animationDelay: '0.84s',\n        transform: 'rotate(90deg)'\n      }\n    },\n    animationStyle8 () {\n      return {\n        top: this.quarter,\n        left: this.ngQuarter,\n        animationDelay: '0.96s',\n        transform: 'rotate(45deg)'\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n\n.v-spinner .v-fade\n{\n    -webkit-animation: v-fadeStretchDelay 1.2s infinite ease-in-out;\n            animation: v-fadeStretchDelay 1.2s infinite ease-in-out;\n    -webkit-animation-fill-mode: both;\n\t          animation-fill-mode: both;\n    position: absolute;               \n}\n\n@-webkit-keyframes v-fadeStretchDelay\n{\n    50%\n    {\n        -webkit-opacity: 0.3;             \n                opacity: 0.3;\n    }\n    100%\n    {\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n\n@keyframes v-fadeStretchDelay\n{\n    50%\n    {\n        -webkit-opacity: 0.3;             \n                opacity: 0.3;\n    }\n    100%\n    {\n        -webkit-opacity: 1;             \n                opacity: 1;\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 41 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	//   <div class="v-spinner" v-bind:style="{position: 'relative', fontSize: 0}" v-show="loading">
-	//   <!-- <div class="v-spinner" v-bind:style="containerStyle"> -->
-	//     <div class="v-fade v-fade1" v-bind:style="[spinnerStyle,animationStyle1]">
-	//     </div><div class="v-fade v-fade2" v-bind:style="[spinnerStyle,animationStyle2]">
-	//     </div><div class="v-fade v-fade3" v-bind:style="[spinnerStyle,animationStyle3]">
-	//     </div><div class="v-fade v-fade4" v-bind:style="[spinnerStyle,animationStyle4]">
-	//     </div><div class="v-fade v-fade5" v-bind:style="[spinnerStyle,animationStyle5]">
-	//     </div><div class="v-fade v-fade6" v-bind:style="[spinnerStyle,animationStyle6]">
-	//     </div><div class="v-fade v-fade7" v-bind:style="[spinnerStyle,animationStyle7]">
-	//     </div><div class="v-fade v-fade8" v-bind:style="[spinnerStyle,animationStyle8]">
-	//     </div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'FadeLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    height: {
-	      type: String,
-	      default: '15px'
-	    },
-	    width: {
-	      type: String,
-	      default: '5px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '20px'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        backgroundColor: this.color,
-	        height: this.height,
-	        width: this.width,
-	        margin: this.margin,
-	        borderRadius: this.radius
-	      }
-	    };
-	  },
-	
-	  computed: {
-	    ngRadius: function ngRadius() {
-	      return '-' + this.radius;
-	    },
-	    quarter: function quarter() {
-	      return parseFloat(this.radius) / 2 + parseFloat(this.radius) / 5.5 + 'px';
-	    },
-	    ngQuarter: function ngQuarter() {
-	      return '-' + this.quarter;
-	    },
-	    animationStyle1: function animationStyle1() {
-	      return {
-	        top: this.radius,
-	        left: 0,
-	        animationDelay: '0.12s'
-	      };
-	    },
-	    animationStyle2: function animationStyle2() {
-	      return {
-	        top: this.quarter,
-	        left: this.quarter,
-	        animationDelay: '0.24s',
-	        transform: 'rotate(-45deg)'
-	      };
-	    },
-	    animationStyle3: function animationStyle3() {
-	      return {
-	        top: 0,
-	        left: this.radius,
-	        animationDelay: '0.36s',
-	        transform: 'rotate(90deg)'
-	      };
-	    },
-	    animationStyle4: function animationStyle4() {
-	      return {
-	        top: this.ngQuarter,
-	        left: this.quarter,
-	        animationDelay: '0.48s',
-	        transform: 'rotate(45deg)'
-	      };
-	    },
-	    animationStyle5: function animationStyle5() {
-	      return {
-	        top: this.ngRadius,
-	        left: 0,
-	        animationDelay: '0.60s'
-	      };
-	    },
-	    animationStyle6: function animationStyle6() {
-	      return {
-	        top: this.ngQuarter,
-	        left: this.ngQuarter,
-	        animationDelay: '0.72s',
-	        transform: 'rotate(-45deg)'
-	      };
-	    },
-	    animationStyle7: function animationStyle7() {
-	      return {
-	        top: 0,
-	        left: this.ngRadius,
-	        animationDelay: '0.84s',
-	        transform: 'rotate(90deg)'
-	      };
-	    },
-	    animationStyle8: function animationStyle8() {
-	      return {
-	        top: this.quarter,
-	        left: this.ngQuarter,
-	        animationDelay: '0.96s',
-	        transform: 'rotate(45deg)'
-	      };
-	    }
-	  }
-	
-	};
-	// </script>
-	//
-	// <style>
-	//
-	// .v-spinner .v-fade
-	// {
-	//     -webkit-animation: v-fadeStretchDelay 1.2s infinite ease-in-out;
-	//             animation: v-fadeStretchDelay 1.2s infinite ease-in-out;
-	//     -webkit-animation-fill-mode: both;
-	// 	          animation-fill-mode: both;
-	//     position: absolute;               
-	// }
-	//
-	// @-webkit-keyframes v-fadeStretchDelay
-	// {
-	//     50%
-	//     {
-	//         -webkit-opacity: 0.3;             
-	//                 opacity: 0.3;
-	//     }
-	//     100%
-	//     {
-	//         -webkit-opacity: 1;             
-	//                 opacity: 1;
-	//     }
-	// }
-	//
-	// @keyframes v-fadeStretchDelay
-	// {
-	//     50%
-	//     {
-	//         -webkit-opacity: 0.3;             
-	//                 opacity: 0.3;
-	//     }
-	//     100%
-	//     {
-	//         -webkit-opacity: 1;             
-	//                 opacity: 1;
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 42 */
-/***/ function(module, exports) {
-
-	module.exports = "\n  <div class=\"v-spinner\" v-bind:style=\"{position: 'relative', fontSize: 0}\" v-show=\"loading\">\n  <!-- <div class=\"v-spinner\" v-bind:style=\"containerStyle\"> -->\n    <div class=\"v-fade v-fade1\" v-bind:style=\"[spinnerStyle,animationStyle1]\">\n    </div><div class=\"v-fade v-fade2\" v-bind:style=\"[spinnerStyle,animationStyle2]\">\n    </div><div class=\"v-fade v-fade3\" v-bind:style=\"[spinnerStyle,animationStyle3]\">\n    </div><div class=\"v-fade v-fade4\" v-bind:style=\"[spinnerStyle,animationStyle4]\">\n    </div><div class=\"v-fade v-fade5\" v-bind:style=\"[spinnerStyle,animationStyle5]\">\n    </div><div class=\"v-fade v-fade6\" v-bind:style=\"[spinnerStyle,animationStyle6]\">\n    </div><div class=\"v-fade v-fade7\" v-bind:style=\"[spinnerStyle,animationStyle7]\">\n    </div><div class=\"v-fade v-fade8\" v-bind:style=\"[spinnerStyle,animationStyle8]\">\n    </div>\n  </div>\n";
-
-/***/ },
-/* 43 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(44)
-	__vue_script__ = __webpack_require__(46)
-	__vue_template__ = __webpack_require__(47)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/PacmanLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 44 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(45);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-1fd650cd&file=PacmanLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./PacmanLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-1fd650cd&file=PacmanLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./PacmanLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 45 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n.v-spinner\n{\n    text-align: center;\n}\n\n/*TODO computed transform */\n@-webkit-keyframes v-pacmanStretchDelay\n{\n    75%\n    {\n        -webkit-opacity: 0.7;             \n        opacity: 0.7;\n    }\n    100%\n    {\n        -webkit-transform: translate(-100px, -6.25px);\n                transform: translate(-100px, -6.25px);\n    }\n}\n\n@keyframes v-pacmanStretchDelay\n{\n    75%\n    {\n        -webkit-opacity: 0.7;             \n        opacity: 0.7;\n    }\n    100%\n    {\n        -webkit-transform: translate(-100px, -6.25px);\n                transform: translate(-100px, -6.25px);\n    }\n}\n", "", {"version":3,"sources":["/./src/PacmanLoader.vue.style"],"names":[],"mappings":";AAsGA;;IAEA,mBAAA;CACA;;AAEA,4BAAA;AACA;;IAEA;;QAEA,qBAAA;QACA,aAAA;KACA;IACA;;QAEA,8CAAA;gBACA,sCAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,qBAAA;QACA,aAAA;KACA;IACA;;QAEA,8CAAA;gBACA,sCAAA;KACA;CACA","file":"PacmanLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-bind:style=\"{position: 'relative', fontSize: 0}\" v-show=\"loading\">\n    <div class=\"v-pacman v-pacman1\" v-bind:style=\"spinnerStyle1\">\n    </div><div class=\"v-pacman v-pacman2\" v-bind:style=\"[spinnerStyle,animationStyle,spinnerDelay2]\">\n    </div><div class=\"v-pacman v-pacman3\" v-bind:style=\"[spinnerStyle,animationStyle,spinnerDelay3]\">\n    </div><div class=\"v-pacman v-pacman4\" v-bind:style=\"[spinnerStyle,animationStyle,spinnerDelay4]\">\n    </div><div class=\"v-pacman v-pacman5\" v-bind:style=\"[spinnerStyle,animationStyle,spinnerDelay5]\">\n    </div>\n</div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'PacmanLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    size: {\n      type: String,\n      default: '25px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  data () {\n    return {\n      spinnerDelay2: {\n        animationDelay: '0.25s'\n      },\n      spinnerDelay3: {\n        animationDelay: '0.50s'\n      },\n      spinnerDelay4: {\n        animationDelay: '0.75s'\n      },\n      spinnerDelay5: {\n        animationDelay: '1s'\n      }\n    }\n  },\n  computed: {\n    spinnerStyle () {\n      return {\n        backgroundColor: this.color,\n        width: this.size,\n        height: this.size,\n        margin: this.margin,\n        borderRadius: this.radius,\n      }\n    },\n    border1 () {\n      return this.size + ' solid transparent'\n    },\n    border2 () {\n      return this.size + ' solid ' + this.color\n    },\n    spinnerStyle1 () {\n      return {\n        width: 0,\n        height: 0,\n        borderTop: this.border2,\n        borderRight: this.border1,\n        borderBottom: this.border2,\n        borderLeft: this.border2,\n        borderRadius: this.size\n      }\n    },\n    animationStyle () {\n      return {\n        width: '10px',\n        height: '10px',\n        transform: 'translate(0, '+ -parseFloat(this.size)/4 + 'px)',\n        position: 'absolute',\n        top: '25px',\n        left: '100px',\n        animationName: 'v-pacmanStretchDelay',\n        animationDuration: '1s',\n        animationIterationCount: 'infinite',\n        animationTimingFunction: 'linear',\n        animationFillMode: 'both'\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n.v-spinner\n{\n    text-align: center;\n}\n\n/*TODO computed transform */\n@-webkit-keyframes v-pacmanStretchDelay\n{\n    75%\n    {\n        -webkit-opacity: 0.7;             \n        opacity: 0.7;\n    }\n    100%\n    {\n        -webkit-transform: translate(-100px, -6.25px);\n                transform: translate(-100px, -6.25px);\n    }\n}\n\n@keyframes v-pacmanStretchDelay\n{\n    75%\n    {\n        -webkit-opacity: 0.7;             \n        opacity: 0.7;\n    }\n    100%\n    {\n        -webkit-transform: translate(-100px, -6.25px);\n                transform: translate(-100px, -6.25px);\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 46 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-bind:style="{position: 'relative', fontSize: 0}" v-show="loading">
-	//     <div class="v-pacman v-pacman1" v-bind:style="spinnerStyle1">
-	//     </div><div class="v-pacman v-pacman2" v-bind:style="[spinnerStyle,animationStyle,spinnerDelay2]">
-	//     </div><div class="v-pacman v-pacman3" v-bind:style="[spinnerStyle,animationStyle,spinnerDelay3]">
-	//     </div><div class="v-pacman v-pacman4" v-bind:style="[spinnerStyle,animationStyle,spinnerDelay4]">
-	//     </div><div class="v-pacman v-pacman5" v-bind:style="[spinnerStyle,animationStyle,spinnerDelay5]">
-	//     </div>
-	// </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'PacmanLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '25px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerDelay2: {
-	        animationDelay: '0.25s'
-	      },
-	      spinnerDelay3: {
-	        animationDelay: '0.50s'
-	      },
-	      spinnerDelay4: {
-	        animationDelay: '0.75s'
-	      },
-	      spinnerDelay5: {
-	        animationDelay: '1s'
-	      }
-	    };
-	  },
-	
-	  computed: {
-	    spinnerStyle: function spinnerStyle() {
-	      return {
-	        backgroundColor: this.color,
-	        width: this.size,
-	        height: this.size,
-	        margin: this.margin,
-	        borderRadius: this.radius
-	      };
-	    },
-	    border1: function border1() {
-	      return this.size + ' solid transparent';
-	    },
-	    border2: function border2() {
-	      return this.size + ' solid ' + this.color;
-	    },
-	    spinnerStyle1: function spinnerStyle1() {
-	      return {
-	        width: 0,
-	        height: 0,
-	        borderTop: this.border2,
-	        borderRight: this.border1,
-	        borderBottom: this.border2,
-	        borderLeft: this.border2,
-	        borderRadius: this.size
-	      };
-	    },
-	    animationStyle: function animationStyle() {
-	      return {
-	        width: '10px',
-	        height: '10px',
-	        transform: 'translate(0, ' + -parseFloat(this.size) / 4 + 'px)',
-	        position: 'absolute',
-	        top: '25px',
-	        left: '100px',
-	        animationName: 'v-pacmanStretchDelay',
-	        animationDuration: '1s',
-	        animationIterationCount: 'infinite',
-	        animationTimingFunction: 'linear',
-	        animationFillMode: 'both'
-	      };
-	    }
-	  }
-	
-	};
-	// </script>
-	//
-	// <style>
-	// .v-spinner
-	// {
-	//     text-align: center;
-	// }
-	//
-	// /*TODO computed transform */
-	// @-webkit-keyframes v-pacmanStretchDelay
-	// {
-	//     75%
-	//     {
-	//         -webkit-opacity: 0.7;             
-	//         opacity: 0.7;
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: translate(-100px, -6.25px);
-	//                 transform: translate(-100px, -6.25px);
-	//     }
-	// }
-	//
-	// @keyframes v-pacmanStretchDelay
-	// {
-	//     75%
-	//     {
-	//         -webkit-opacity: 0.7;             
-	//         opacity: 0.7;
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: translate(-100px, -6.25px);
-	//                 transform: translate(-100px, -6.25px);
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 47 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-bind:style=\"{position: 'relative', fontSize: 0}\" v-show=\"loading\">\n    <div class=\"v-pacman v-pacman1\" v-bind:style=\"spinnerStyle1\">\n    </div><div class=\"v-pacman v-pacman2\" v-bind:style=\"[spinnerStyle,animationStyle,spinnerDelay2]\">\n    </div><div class=\"v-pacman v-pacman3\" v-bind:style=\"[spinnerStyle,animationStyle,spinnerDelay3]\">\n    </div><div class=\"v-pacman v-pacman4\" v-bind:style=\"[spinnerStyle,animationStyle,spinnerDelay4]\">\n    </div><div class=\"v-pacman v-pacman5\" v-bind:style=\"[spinnerStyle,animationStyle,spinnerDelay5]\">\n    </div>\n</div>\n";
-
-/***/ },
-/* 48 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(49)
-	__vue_script__ = __webpack_require__(51)
-	__vue_template__ = __webpack_require__(52)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/SquareLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 49 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(50);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5c782022&file=SquareLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./SquareLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5c782022&file=SquareLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./SquareLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 50 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n.v-spinner\n{\n    text-align: center;\n}\n\n.v-spinner .v-square\n{\n    -webkit-animation: v-squareDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);\n            animation: v-squareDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);\n    -webkit-animation-fill-mode: both;\n\t          animation-fill-mode: both;\n    -webkit-perspective: 100px;\n            perspective: 100px;\n    display: inline-block;\n}\n\n@-webkit-keyframes v-squareDelay\n{\n    25%\n    {\n        -webkit-transform: rotateX(180deg) rotateY(0);\n                transform: rotateX(180deg) rotateY(0);\n    }\n    50%\n    {\n        -webkit-transform: rotateX(180deg) rotateY(180deg);\n                transform: rotateX(180deg) rotateY(180deg);\n    }\n    75%\n    {\n        -webkit-transform: rotateX(0) rotateY(180deg);\n                transform: rotateX(0) rotateY(180deg);\n    }\n    100%\n    {\n        -webkit-transform: rotateX(0) rotateY(0);\n                transform: rotateX(0) rotateY(0);\n    }\n}\n\n@keyframes v-squareDelay\n{\n    25%\n    {\n        -webkit-transform: rotateX(180deg) rotateY(0);\n                transform: rotateX(180deg) rotateY(0);\n    }\n    50%\n    {\n        -webkit-transform: rotateX(180deg) rotateY(180deg);\n                transform: rotateX(180deg) rotateY(180deg);\n    }\n    75%\n    {\n        -webkit-transform: rotateX(0) rotateY(180deg);\n                transform: rotateX(0) rotateY(180deg);\n    }\n    100%\n    {\n        -webkit-transform: rotateX(0) rotateY(0);\n                transform: rotateX(0) rotateY(0);\n    }\n}\n", "", {"version":3,"sources":["/./src/SquareLoader.vue.style"],"names":[],"mappings":";AAwCA;;IAEA,mBAAA;CACA;;AAEA;;IAEA,6EAAA;YACA,qEAAA;IACA,kCAAA;WACA,0BAAA;IACA,2BAAA;YAAA,mBAAA;IACA,sBAAA;CACA;;AAEA;;IAEA;;QAEA,8CAAA;gBACA,sCAAA;KACA;IACA;;QAEA,mDAAA;gBACA,2CAAA;KACA;IACA;;QAEA,8CAAA;gBACA,sCAAA;KACA;IACA;;QAEA,yCAAA;gBACA,iCAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,8CAAA;gBACA,sCAAA;KACA;IACA;;QAEA,mDAAA;gBACA,2CAAA;KACA;IACA;;QAEA,8CAAA;gBACA,sCAAA;KACA;IACA;;QAEA,yCAAA;gBACA,iCAAA;KACA;CACA","file":"SquareLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-square\" v-bind:style=\"spinnerStyle\">\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'SquareLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n  \tcolor: { \n      type: String,\n      default: '#5dc596'\n    },\n  \tsize: {\n      type: String,\n      default: '50px'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n      \tbackgroundColor: this.color,\n      \theight: this.size,\n     \t  width: this.size\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n.v-spinner\n{\n    text-align: center;\n}\n\n.v-spinner .v-square\n{\n    -webkit-animation: v-squareDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);\n            animation: v-squareDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);\n    -webkit-animation-fill-mode: both;\n\t          animation-fill-mode: both;\n    perspective: 100px;\n    display: inline-block;\n}\n\n@-webkit-keyframes v-squareDelay\n{\n    25%\n    {\n        -webkit-transform: rotateX(180deg) rotateY(0);\n                transform: rotateX(180deg) rotateY(0);\n    }\n    50%\n    {\n        -webkit-transform: rotateX(180deg) rotateY(180deg);\n                transform: rotateX(180deg) rotateY(180deg);\n    }\n    75%\n    {\n        -webkit-transform: rotateX(0) rotateY(180deg);\n                transform: rotateX(0) rotateY(180deg);\n    }\n    100%\n    {\n        -webkit-transform: rotateX(0) rotateY(0);\n                transform: rotateX(0) rotateY(0);\n    }\n}\n\n@keyframes v-squareDelay\n{\n    25%\n    {\n        -webkit-transform: rotateX(180deg) rotateY(0);\n                transform: rotateX(180deg) rotateY(0);\n    }\n    50%\n    {\n        -webkit-transform: rotateX(180deg) rotateY(180deg);\n                transform: rotateX(180deg) rotateY(180deg);\n    }\n    75%\n    {\n        -webkit-transform: rotateX(0) rotateY(180deg);\n                transform: rotateX(0) rotateY(180deg);\n    }\n    100%\n    {\n        -webkit-transform: rotateX(0) rotateY(0);\n                transform: rotateX(0) rotateY(0);\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 51 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-square" v-bind:style="spinnerStyle">
-	//     </div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'SquareLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '50px'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        backgroundColor: this.color,
-	        height: this.size,
-	        width: this.size
-	      }
-	    };
-	  }
-	};
-	// </script>
-	//
-	// <style>
-	// .v-spinner
-	// {
-	//     text-align: center;
-	// }
-	//
-	// .v-spinner .v-square
-	// {
-	//     -webkit-animation: v-squareDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);
-	//             animation: v-squareDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);
-	//     -webkit-animation-fill-mode: both;
-	// 	          animation-fill-mode: both;
-	//     perspective: 100px;
-	//     display: inline-block;
-	// }
-	//
-	// @-webkit-keyframes v-squareDelay
-	// {
-	//     25%
-	//     {
-	//         -webkit-transform: rotateX(180deg) rotateY(0);
-	//                 transform: rotateX(180deg) rotateY(0);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: rotateX(180deg) rotateY(180deg);
-	//                 transform: rotateX(180deg) rotateY(180deg);
-	//     }
-	//     75%
-	//     {
-	//         -webkit-transform: rotateX(0) rotateY(180deg);
-	//                 transform: rotateX(0) rotateY(180deg);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: rotateX(0) rotateY(0);
-	//                 transform: rotateX(0) rotateY(0);
-	//     }
-	// }
-	//
-	// @keyframes v-squareDelay
-	// {
-	//     25%
-	//     {
-	//         -webkit-transform: rotateX(180deg) rotateY(0);
-	//                 transform: rotateX(180deg) rotateY(0);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: rotateX(180deg) rotateY(180deg);
-	//                 transform: rotateX(180deg) rotateY(180deg);
-	//     }
-	//     75%
-	//     {
-	//         -webkit-transform: rotateX(0) rotateY(180deg);
-	//                 transform: rotateX(0) rotateY(180deg);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: rotateX(0) rotateY(0);
-	//                 transform: rotateX(0) rotateY(0);
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 52 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-square\" v-bind:style=\"spinnerStyle\">\n    </div>\n  </div>\n";
-
-/***/ },
-/* 53 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(54)
-	__vue_script__ = __webpack_require__(56)
-	__vue_template__ = __webpack_require__(57)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/ScaleLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 54 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(55);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-d844fe4a&file=ScaleLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ScaleLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-d844fe4a&file=ScaleLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ScaleLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 55 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n.v-spinner\n{\n/*\t  font-size: 10px; \n\n    width: 60px;\n    height: 40px;*/\n    /*margin: 25px auto;*/\n    text-align: center;\n \n}\n\n\n@-webkit-keyframes v-scaleStretchDelay\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scaleY(1);\n                transform: scaleY(1);\n    }\n    50%\n    {\n        -webkit-transform: scaleY(0.4);\n                transform: scaleY(0.4);\n    }\n}\n\n@keyframes v-scaleStretchDelay\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scaleY(1);\n                transform: scaleY(1);\n    }\n    50%\n    {\n        -webkit-transform: scaleY(0.4);\n                transform: scaleY(0.4);\n    }\n}\n", "", {"version":3,"sources":["/./src/ScaleLoader.vue.style"],"names":[],"mappings":";AAkFA;;AAEA;;;mBAGA;IACA,sBAAA;IACA,mBAAA;;CAEA;;;AAGA;;IAEA;;;QAGA,6BAAA;gBACA,qBAAA;KACA;IACA;;QAEA,+BAAA;gBACA,uBAAA;KACA;CACA;;AAEA;;IAEA;;;QAGA,6BAAA;gBACA,qBAAA;KACA;IACA;;QAEA,+BAAA;gBACA,uBAAA;KACA;CACA","file":"ScaleLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-scale v-scale1\" v-bind:style=\"[spinnerStyle,spinnerDelay1]\">\n    </div><div class=\"v-scale v-scale2\" v-bind:style=\"[spinnerStyle,spinnerDelay2]\">\n    </div><div class=\"v-scale v-scale3\" v-bind:style=\"[spinnerStyle,spinnerDelay3]\">\n    </div><div class=\"v-scale v-scale4\" v-bind:style=\"[spinnerStyle,spinnerDelay4]\">\n    </div><div class=\"v-scale v-scale5\" v-bind:style=\"[spinnerStyle,spinnerDelay5]\">\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'ScaleLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n  \tcolor: { \n      type: String,\n      default: '#5dc596'\n    },\n  \theight: {\n      type: String,\n      default: '35px'\n    },\n  \twidth: {\n      type: String,\n      default: '4px'\n    },\n  \tmargin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '2px'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n      \tbackgroundColor: this.color,\n      \theight: this.height,\n     \t\twidth: this.width,\n      \tmargin: this.margin,\n      \tborderRadius: this.radius,\n        display: 'inline-block',\n        animationName: 'v-scaleStretchDelay',\n        animationDuration: '1s',\n        animationIterationCount: 'infinite',\n        animationTimingFunction: 'cubic-bezier(.2,.68,.18,1.08)',\n        animationFillMode: 'both'\n      \t// TODO \n      \t// animation: ['sk-waveStretchDelay', '1s', 'infinite', 'cubic-bezier(.2,.68,.18,1.08)'].join(' '),\n      \t// animationFillMode: \"both\"\n      },\n      spinnerDelay1: {\n        animationDelay: '0.1s'\n      },\n      spinnerDelay2: {\n        animationDelay: '0.2s'\n      },\n      spinnerDelay3: {\n        animationDelay: '0.3s'\n      },\n      spinnerDelay4: {\n        animationDelay: '0.4s'\n      },\n      spinnerDelay5: {\n        animationDelay: '0.5s'\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n.v-spinner\n{\n/*\t  font-size: 10px; \n\n    width: 60px;\n    height: 40px;*/\n    /*margin: 25px auto;*/\n    text-align: center;\n \n}\n\n\n@-webkit-keyframes v-scaleStretchDelay\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scaleY(1);\n                transform: scaleY(1);\n    }\n    50%\n    {\n        -webkit-transform: scaleY(0.4);\n                transform: scaleY(0.4);\n    }\n}\n\n@keyframes v-scaleStretchDelay\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scaleY(1);\n                transform: scaleY(1);\n    }\n    50%\n    {\n        -webkit-transform: scaleY(0.4);\n                transform: scaleY(0.4);\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 56 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-scale v-scale1" v-bind:style="[spinnerStyle,spinnerDelay1]">
-	//     </div><div class="v-scale v-scale2" v-bind:style="[spinnerStyle,spinnerDelay2]">
-	//     </div><div class="v-scale v-scale3" v-bind:style="[spinnerStyle,spinnerDelay3]">
-	//     </div><div class="v-scale v-scale4" v-bind:style="[spinnerStyle,spinnerDelay4]">
-	//     </div><div class="v-scale v-scale5" v-bind:style="[spinnerStyle,spinnerDelay5]">
-	//     </div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'ScaleLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    height: {
-	      type: String,
-	      default: '35px'
-	    },
-	    width: {
-	      type: String,
-	      default: '4px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '2px'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        backgroundColor: this.color,
-	        height: this.height,
-	        width: this.width,
-	        margin: this.margin,
-	        borderRadius: this.radius,
-	        display: 'inline-block',
-	        animationName: 'v-scaleStretchDelay',
-	        animationDuration: '1s',
-	        animationIterationCount: 'infinite',
-	        animationTimingFunction: 'cubic-bezier(.2,.68,.18,1.08)',
-	        animationFillMode: 'both'
-	        // TODO 
-	        // animation: ['sk-waveStretchDelay', '1s', 'infinite', 'cubic-bezier(.2,.68,.18,1.08)'].join(' '),
-	        // animationFillMode: "both"
-	      },
-	      spinnerDelay1: {
-	        animationDelay: '0.1s'
-	      },
-	      spinnerDelay2: {
-	        animationDelay: '0.2s'
-	      },
-	      spinnerDelay3: {
-	        animationDelay: '0.3s'
-	      },
-	      spinnerDelay4: {
-	        animationDelay: '0.4s'
-	      },
-	      spinnerDelay5: {
-	        animationDelay: '0.5s'
-	      }
-	    };
-	  }
-	};
-	// </script>
-	//
-	// <style>
-	// .v-spinner
-	// {
-	// /*	  font-size: 10px; 
-	//
-	//     width: 60px;
-	//     height: 40px;*/
-	//     /*margin: 25px auto;*/
-	//     text-align: center;
-	//
-	// }
-	//
-	//
-	// @-webkit-keyframes v-scaleStretchDelay
-	// {
-	//     0%,
-	//     100%
-	//     {
-	//         -webkit-transform: scaleY(1);
-	//                 transform: scaleY(1);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: scaleY(0.4);
-	//                 transform: scaleY(0.4);
-	//     }
-	// }
-	//
-	// @keyframes v-scaleStretchDelay
-	// {
-	//     0%,
-	//     100%
-	//     {
-	//         -webkit-transform: scaleY(1);
-	//                 transform: scaleY(1);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: scaleY(0.4);
-	//                 transform: scaleY(0.4);
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 57 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-scale v-scale1\" v-bind:style=\"[spinnerStyle,spinnerDelay1]\">\n    </div><div class=\"v-scale v-scale2\" v-bind:style=\"[spinnerStyle,spinnerDelay2]\">\n    </div><div class=\"v-scale v-scale3\" v-bind:style=\"[spinnerStyle,spinnerDelay3]\">\n    </div><div class=\"v-scale v-scale4\" v-bind:style=\"[spinnerStyle,spinnerDelay4]\">\n    </div><div class=\"v-scale v-scale5\" v-bind:style=\"[spinnerStyle,spinnerDelay5]\">\n    </div>\n  </div>\n";
-
-/***/ },
-/* 58 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(59)
-	__vue_script__ = __webpack_require__(61)
-	__vue_template__ = __webpack_require__(62)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/SkewLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 59 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(60);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c730c362&file=SkewLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./SkewLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c730c362&file=SkewLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./SkewLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 60 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n.v-spinner\n{\n    text-align: center;\n}\n\n.v-spinner .v-skew\n{\n    -webkit-animation: v-skewDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);\n            animation: v-skewDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);\n    -webkit-animation-fill-mode: both;\n\t          animation-fill-mode: both;\n    display: inline-block;\n}\n\n@-webkit-keyframes v-skewDelay\n{\n    25%\n    {\n        -webkit-transform: perspective(100px) rotateX(180deg) rotateY(0);\n                transform: perspective(100px) rotateX(180deg) rotateY(0);\n    }\n    50%\n    {\n        -webkit-transform: perspective(100px) rotateX(180deg) rotateY(180deg);\n                transform: perspective(100px) rotateX(180deg) rotateY(180deg);\n    }\n    75%\n    {\n        -webkit-transform: perspective(100px) rotateX(0) rotateY(180deg);\n                transform: perspective(100px) rotateX(0) rotateY(180deg);\n    }\n    100%\n    {\n        -webkit-transform: perspective(100px) rotateX(0) rotateY(0);\n                transform: perspective(100px) rotateX(0) rotateY(0);\n    }\n}\n\n@keyframes v-skewDelay\n{\n    25%\n    {\n        -webkit-transform: perspective(100px) rotateX(180deg) rotateY(0);\n                transform: perspective(100px) rotateX(180deg) rotateY(0);\n    }\n    50%\n    {\n        -webkit-transform: perspective(100px) rotateX(180deg) rotateY(180deg);\n                transform: perspective(100px) rotateX(180deg) rotateY(180deg);\n    }\n    75%\n    {\n        -webkit-transform: perspective(100px) rotateX(0) rotateY(180deg);\n                transform: perspective(100px) rotateX(0) rotateY(180deg);\n    }\n    100%\n    {\n        -webkit-transform: perspective(100px) rotateX(0) rotateY(0);\n                transform: perspective(100px) rotateX(0) rotateY(0);\n    }\n}\n", "", {"version":3,"sources":["/./src/SkewLoader.vue.style"],"names":[],"mappings":";AA0CA;;IAEA,mBAAA;CACA;;AAEA;;IAEA,2EAAA;YACA,mEAAA;IACA,kCAAA;WACA,0BAAA;IACA,sBAAA;CACA;;AAEA;;IAEA;;QAEA,iEAAA;gBACA,yDAAA;KACA;IACA;;QAEA,sEAAA;gBACA,8DAAA;KACA;IACA;;QAEA,iEAAA;gBACA,yDAAA;KACA;IACA;;QAEA,4DAAA;gBACA,oDAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,iEAAA;gBACA,yDAAA;KACA;IACA;;QAEA,sEAAA;gBACA,8DAAA;KACA;IACA;;QAEA,iEAAA;gBACA,yDAAA;KACA;IACA;;QAEA,4DAAA;gBACA,oDAAA;KACA;CACA","file":"SkewLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-skew\" v-bind:style=\"spinnerStyle\">\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'SkewLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n  \tcolor: { \n      type: String,\n      default: '#5dc596'\n    },\n  \tsize: {\n      type: String,\n      default: '20px'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n      \theight: 0,\n     \t  width: 0,\n        borderLeft: this.size + ' solid transparent',\n        borderRight: this.size + ' solid transparent',\n        borderBottom: this.size + ' solid ' + this.color\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n.v-spinner\n{\n    text-align: center;\n}\n\n.v-spinner .v-skew\n{\n    -webkit-animation: v-skewDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);\n            animation: v-skewDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);\n    -webkit-animation-fill-mode: both;\n\t          animation-fill-mode: both;\n    display: inline-block;\n}\n\n@-webkit-keyframes v-skewDelay\n{\n    25%\n    {\n        -webkit-transform: perspective(100px) rotateX(180deg) rotateY(0);\n                transform: perspective(100px) rotateX(180deg) rotateY(0);\n    }\n    50%\n    {\n        -webkit-transform: perspective(100px) rotateX(180deg) rotateY(180deg);\n                transform: perspective(100px) rotateX(180deg) rotateY(180deg);\n    }\n    75%\n    {\n        -webkit-transform: perspective(100px) rotateX(0) rotateY(180deg);\n                transform: perspective(100px) rotateX(0) rotateY(180deg);\n    }\n    100%\n    {\n        -webkit-transform: perspective(100px) rotateX(0) rotateY(0);\n                transform: perspective(100px) rotateX(0) rotateY(0);\n    }\n}\n\n@keyframes v-skewDelay\n{\n    25%\n    {\n        -webkit-transform: perspective(100px) rotateX(180deg) rotateY(0);\n                transform: perspective(100px) rotateX(180deg) rotateY(0);\n    }\n    50%\n    {\n        -webkit-transform: perspective(100px) rotateX(180deg) rotateY(180deg);\n                transform: perspective(100px) rotateX(180deg) rotateY(180deg);\n    }\n    75%\n    {\n        -webkit-transform: perspective(100px) rotateX(0) rotateY(180deg);\n                transform: perspective(100px) rotateX(0) rotateY(180deg);\n    }\n    100%\n    {\n        -webkit-transform: perspective(100px) rotateX(0) rotateY(0);\n                transform: perspective(100px) rotateX(0) rotateY(0);\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 61 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-skew" v-bind:style="spinnerStyle">
-	//     </div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'SkewLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '20px'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        height: 0,
-	        width: 0,
-	        borderLeft: this.size + ' solid transparent',
-	        borderRight: this.size + ' solid transparent',
-	        borderBottom: this.size + ' solid ' + this.color
-	      }
-	    };
-	  }
-	};
-	// </script>
-	//
-	// <style>
-	// .v-spinner
-	// {
-	//     text-align: center;
-	// }
-	//
-	// .v-spinner .v-skew
-	// {
-	//     -webkit-animation: v-skewDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);
-	//             animation: v-skewDelay 3s 0s infinite cubic-bezier(.09,.57,.49,.9);
-	//     -webkit-animation-fill-mode: both;
-	// 	          animation-fill-mode: both;
-	//     display: inline-block;
-	// }
-	//
-	// @-webkit-keyframes v-skewDelay
-	// {
-	//     25%
-	//     {
-	//         -webkit-transform: perspective(100px) rotateX(180deg) rotateY(0);
-	//                 transform: perspective(100px) rotateX(180deg) rotateY(0);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: perspective(100px) rotateX(180deg) rotateY(180deg);
-	//                 transform: perspective(100px) rotateX(180deg) rotateY(180deg);
-	//     }
-	//     75%
-	//     {
-	//         -webkit-transform: perspective(100px) rotateX(0) rotateY(180deg);
-	//                 transform: perspective(100px) rotateX(0) rotateY(180deg);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: perspective(100px) rotateX(0) rotateY(0);
-	//                 transform: perspective(100px) rotateX(0) rotateY(0);
-	//     }
-	// }
-	//
-	// @keyframes v-skewDelay
-	// {
-	//     25%
-	//     {
-	//         -webkit-transform: perspective(100px) rotateX(180deg) rotateY(0);
-	//                 transform: perspective(100px) rotateX(180deg) rotateY(0);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: perspective(100px) rotateX(180deg) rotateY(180deg);
-	//                 transform: perspective(100px) rotateX(180deg) rotateY(180deg);
-	//     }
-	//     75%
-	//     {
-	//         -webkit-transform: perspective(100px) rotateX(0) rotateY(180deg);
-	//                 transform: perspective(100px) rotateX(0) rotateY(180deg);
-	//     }
-	//     100%
-	//     {
-	//         -webkit-transform: perspective(100px) rotateX(0) rotateY(0);
-	//                 transform: perspective(100px) rotateX(0) rotateY(0);
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 62 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-skew\" v-bind:style=\"spinnerStyle\">\n    </div>\n  </div>\n";
-
-/***/ },
-/* 63 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(64)
-	__vue_script__ = __webpack_require__(66)
-	__vue_template__ = __webpack_require__(67)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/MoonLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 64 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(65);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-1c272b86&file=MoonLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./MoonLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-1c272b86&file=MoonLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./MoonLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 65 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n.v-spinner .v-moon1\n{\n\n    -webkit-animation: v-moonStretchDelay 0.6s 0s infinite linear;\n            animation: v-moonStretchDelay 0.6s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    position: relative;\n}\n\n.v-spinner .v-moon2\n{\n    -webkit-animation: v-moonStretchDelay 0.6s 0s infinite linear;\n            animation: v-moonStretchDelay 0.6s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    opacity: 0.8;\n    position: absolute;\n}\n\n.v-spinner .v-moon3\n{\n    opacity: 0.1;\n}\n\n@-webkit-keyframes v-moonStretchDelay\n{\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n\n@keyframes v-moonStretchDelay\n{\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n", "", {"version":3,"sources":["/./src/MoonLoader.vue.style"],"names":[],"mappings":";;AA0EA;;;IAGA,8DAAA;YACA,sDAAA;IACA,sCAAA;YACA,8BAAA;IACA,mBAAA;CACA;;AAEA;;IAEA,8DAAA;YACA,sDAAA;IACA,sCAAA;YACA,8BAAA;IACA,aAAA;IACA,mBAAA;CACA;;AAEA;;IAEA,aAAA;CACA;;AAEA;;IAEA;;QAEA,kCAAA;gBACA,0BAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,kCAAA;gBACA,0BAAA;KACA;CACA","file":"MoonLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-moon v-moon1\" v-bind:style=\"spinnerStyle\">\n    <div class=\"v-moon v-moon2\" v-bind:style=\"[spinnerMoonStyle,animationStyle2]\">\n    </div><div class=\"v-moon v-moon3\" v-bind:style=\"[spinnerStyle,animationStyle3]\">\n    </div></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'MoonLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    size: {\n      type: String,\n      default: '60px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n        height: this.size,\n        width: this.size,\n        borderRadius: this.radius\n      }\n    }\n  },\n  computed: {\n    moonSize() {\n      return parseFloat(this.size)/7\n    },\n    spinnerMoonStyle () {\n      return {\n        height: this.moonSize  + 'px',\n        width: this.moonSize  + 'px',\n        borderRadius: this.radius\n      }\n    },\n    animationStyle2 () {\n      return {\n        top: parseFloat(this.size)/2 - this.moonSize/2 + 'px',\n        backgroundColor: this.color\n      }\n    },\n    animationStyle3 () {\n      return {\n        border: this.moonSize + 'px solid ' + this.color\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n\n.v-spinner .v-moon1\n{\n\n    -webkit-animation: v-moonStretchDelay 0.6s 0s infinite linear;\n            animation: v-moonStretchDelay 0.6s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    position: relative;\n}\n\n.v-spinner .v-moon2\n{\n    -webkit-animation: v-moonStretchDelay 0.6s 0s infinite linear;\n            animation: v-moonStretchDelay 0.6s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    opacity: 0.8;\n    position: absolute;\n}\n\n.v-spinner .v-moon3\n{\n    opacity: 0.1;\n}\n\n@-webkit-keyframes v-moonStretchDelay\n{\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n\n@keyframes v-moonStretchDelay\n{\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 66 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-moon v-moon1" v-bind:style="spinnerStyle">
-	//     <div class="v-moon v-moon2" v-bind:style="[spinnerMoonStyle,animationStyle2]">
-	//     </div><div class="v-moon v-moon3" v-bind:style="[spinnerStyle,animationStyle3]">
-	//     </div></div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'MoonLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '60px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        height: this.size,
-	        width: this.size,
-	        borderRadius: this.radius
-	      }
-	    };
-	  },
-	
-	  computed: {
-	    moonSize: function moonSize() {
-	      return parseFloat(this.size) / 7;
-	    },
-	    spinnerMoonStyle: function spinnerMoonStyle() {
-	      return {
-	        height: this.moonSize + 'px',
-	        width: this.moonSize + 'px',
-	        borderRadius: this.radius
-	      };
-	    },
-	    animationStyle2: function animationStyle2() {
-	      return {
-	        top: parseFloat(this.size) / 2 - this.moonSize / 2 + 'px',
-	        backgroundColor: this.color
-	      };
-	    },
-	    animationStyle3: function animationStyle3() {
-	      return {
-	        border: this.moonSize + 'px solid ' + this.color
-	      };
-	    }
-	  }
-	
-	};
-	// </script>
-	//
-	// <style>
-	//
-	// .v-spinner .v-moon1
-	// {
-	//
-	//     -webkit-animation: v-moonStretchDelay 0.6s 0s infinite linear;
-	//             animation: v-moonStretchDelay 0.6s 0s infinite linear;
-	//     -webkit-animation-fill-mode: forwards;
-	//             animation-fill-mode: forwards;
-	//     position: relative;
-	// }
-	//
-	// .v-spinner .v-moon2
-	// {
-	//     -webkit-animation: v-moonStretchDelay 0.6s 0s infinite linear;
-	//             animation: v-moonStretchDelay 0.6s 0s infinite linear;
-	//     -webkit-animation-fill-mode: forwards;
-	//             animation-fill-mode: forwards;
-	//     opacity: 0.8;
-	//     position: absolute;
-	// }
-	//
-	// .v-spinner .v-moon3
-	// {
-	//     opacity: 0.1;
-	// }
-	//
-	// @-webkit-keyframes v-moonStretchDelay
-	// {
-	//     100%
-	//     {
-	//         -webkit-transform: rotate(360deg);
-	//                 transform: rotate(360deg);
-	//     }
-	// }
-	//
-	// @keyframes v-moonStretchDelay
-	// {
-	//     100%
-	//     {
-	//         -webkit-transform: rotate(360deg);
-	//                 transform: rotate(360deg);
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 67 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-moon v-moon1\" v-bind:style=\"spinnerStyle\">\n    <div class=\"v-moon v-moon2\" v-bind:style=\"[spinnerMoonStyle,animationStyle2]\">\n    </div><div class=\"v-moon v-moon3\" v-bind:style=\"[spinnerStyle,animationStyle3]\">\n    </div></div>\n  </div>\n";
-
-/***/ },
-/* 68 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(69)
-	__vue_script__ = __webpack_require__(71)
-	__vue_template__ = __webpack_require__(72)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/RingLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 69 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(70);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-57112816&file=RingLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RingLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-57112816&file=RingLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RingLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 70 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n.v-spinner .v-ring\n{         \n}\n\n.v-spinner .v-ring1\n{      \n}\n\n.v-spinner .v-ring2\n{\n\n    -webkit-animation: v-ringRightRotate 2s 0s infinite linear;\n            animation: v-ringRightRotate 2s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    -webkit-perspective: 800px;\n            perspective: 800px;  \n    position: absolute;          \n    top: 0;\n    left: 0;\n}\n\n.v-spinner .v-ring3\n{\n\n    -webkit-animation: v-ringLeftRotate 2s 0s infinite linear;\n            animation: v-ringLeftRotate 2s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    -webkit-perspective: 800px;\n            perspective: 800px;            \n    position: absolute;\n    top: 0;\n    left: 0;\n}\n\n@-webkit-keyframes v-ringRightRotate\n{\n    0%\n    {\n        -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n                transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n    }\n    100%\n    { \n        -webkit-transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);\n                transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);\n    \n    }\n}\n\n@keyframes v-ringRightRotate\n{\n    0%\n    {\n        -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n                transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n    }\n    100%\n    { \n        -webkit-transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);\n                transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);\n    \n    }\n}\n\n@-webkit-keyframes v-ringLeftRotate\n{\n    0%\n    {\n        -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n                transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n    }\n    100%\n    { \n        -webkit-transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);\n                transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);\n    \n    }\n}\n\n@keyframes v-ringLeftRotate\n{\n    0%\n    {\n        -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n                transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n    }\n    100%\n    { \n        -webkit-transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);\n                transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);\n    \n    }\n}\n", "", {"version":3,"sources":["/./src/RingLoader.vue.style"],"names":[],"mappings":";;AA4DA;;CAEA;;AAEA;;CAEA;;AAEA;;;IAGA,2DAAA;YACA,mDAAA;IACA,sCAAA;YACA,8BAAA;IACA,2BAAA;YAAA,mBAAA;IACA,mBAAA;IACA,OAAA;IACA,QAAA;CACA;;AAEA;;;IAGA,0DAAA;YACA,kDAAA;IACA,sCAAA;YACA,8BAAA;IACA,2BAAA;YAAA,mBAAA;IACA,mBAAA;IACA,OAAA;IACA,QAAA;CACA;;AAEA;;IAEA;;QAEA,6DAAA;gBACA,qDAAA;KACA;IACA;;QAEA,mEAAA;gBACA,2DAAA;;KAEA;CACA;;AAEA;;IAEA;;QAEA,6DAAA;gBACA,qDAAA;KACA;IACA;;QAEA,mEAAA;gBACA,2DAAA;;KAEA;CACA;;AAEA;;IAEA;;QAEA,6DAAA;gBACA,qDAAA;KACA;IACA;;QAEA,mEAAA;gBACA,2DAAA;;KAEA;CACA;;AAEA;;IAEA;;QAEA,6DAAA;gBACA,qDAAA;KACA;IACA;;QAEA,mEAAA;gBACA,2DAAA;;KAEA;CACA","file":"RingLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-ring v-ring1\" v-bind:style=\"spinnerBasicStyle\">\n    <div class=\"v-ring v-ring2\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-ring v-ring3\" v-bind:style=\"spinnerStyle\">\n    </div></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'RingLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    size: {\n      type: String,\n      default: '60px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  computed: {\n    spinnerStyle () {\n      return {\n        height: this.size,\n        width: this.size,\n        border: parseFloat(this.size)/10 + 'px solid' + this.color,\n        opacity: 0.4,\n        borderRadius: this.radius\n      }\n    },\n    spinnerBasicStyle () {\n      return {\n        height: this.size,\n        width: this.size,\n        position: 'relative'\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n\n.v-spinner .v-ring\n{         \n}\n\n.v-spinner .v-ring1\n{      \n}\n\n.v-spinner .v-ring2\n{\n\n    -webkit-animation: v-ringRightRotate 2s 0s infinite linear;\n            animation: v-ringRightRotate 2s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    perspective: 800px;  \n    position: absolute;          \n    top: 0;\n    left: 0;\n}\n\n.v-spinner .v-ring3\n{\n\n    -webkit-animation: v-ringLeftRotate 2s 0s infinite linear;\n            animation: v-ringLeftRotate 2s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    perspective: 800px;            \n    position: absolute;\n    top: 0;\n    left: 0;\n}\n\n@-webkit-keyframes v-ringRightRotate\n{\n    0%\n    {\n        -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n                transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n    }\n    100%\n    { \n        -webkit-transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);\n                transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);\n    \n    }\n}\n\n@keyframes v-ringRightRotate\n{\n    0%\n    {\n        -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n                transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n    }\n    100%\n    { \n        -webkit-transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);\n                transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);\n    \n    }\n}\n\n@-webkit-keyframes v-ringLeftRotate\n{\n    0%\n    {\n        -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n                transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n    }\n    100%\n    { \n        -webkit-transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);\n                transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);\n    \n    }\n}\n\n@keyframes v-ringLeftRotate\n{\n    0%\n    {\n        -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n                transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);\n    }\n    100%\n    { \n        -webkit-transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);\n                transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);\n    \n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 71 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-ring v-ring1" v-bind:style="spinnerBasicStyle">
-	//     <div class="v-ring v-ring2" v-bind:style="spinnerStyle">
-	//     </div><div class="v-ring v-ring3" v-bind:style="spinnerStyle">
-	//     </div></div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'RingLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '60px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  computed: {
-	    spinnerStyle: function spinnerStyle() {
-	      return {
-	        height: this.size,
-	        width: this.size,
-	        border: parseFloat(this.size) / 10 + 'px solid' + this.color,
-	        opacity: 0.4,
-	        borderRadius: this.radius
-	      };
-	    },
-	    spinnerBasicStyle: function spinnerBasicStyle() {
-	      return {
-	        height: this.size,
-	        width: this.size,
-	        position: 'relative'
-	      };
-	    }
-	  }
-	
-	};
-	// </script>
-	//
-	// <style>
-	//
-	// .v-spinner .v-ring
-	// {         
-	// }
-	//
-	// .v-spinner .v-ring1
-	// {      
-	// }
-	//
-	// .v-spinner .v-ring2
-	// {
-	//
-	//     -webkit-animation: v-ringRightRotate 2s 0s infinite linear;
-	//             animation: v-ringRightRotate 2s 0s infinite linear;
-	//     -webkit-animation-fill-mode: forwards;
-	//             animation-fill-mode: forwards;
-	//     perspective: 800px;  
-	//     position: absolute;          
-	//     top: 0;
-	//     left: 0;
-	// }
-	//
-	// .v-spinner .v-ring3
-	// {
-	//
-	//     -webkit-animation: v-ringLeftRotate 2s 0s infinite linear;
-	//             animation: v-ringLeftRotate 2s 0s infinite linear;
-	//     -webkit-animation-fill-mode: forwards;
-	//             animation-fill-mode: forwards;
-	//     perspective: 800px;            
-	//     position: absolute;
-	//     top: 0;
-	//     left: 0;
-	// }
-	//
-	// @-webkit-keyframes v-ringRightRotate
-	// {
-	//     0%
-	//     {
-	//         -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-	//                 transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-	//     }
-	//     100%
-	//     { 
-	//         -webkit-transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);
-	//                 transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);
-	//
-	//     }
-	// }
-	//
-	// @keyframes v-ringRightRotate
-	// {
-	//     0%
-	//     {
-	//         -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-	//                 transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-	//     }
-	//     100%
-	//     { 
-	//         -webkit-transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);
-	//                 transform: rotateX(180deg) rotateY(360deg) rotateZ(360deg);
-	//
-	//     }
-	// }
-	//
-	// @-webkit-keyframes v-ringLeftRotate
-	// {
-	//     0%
-	//     {
-	//         -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-	//                 transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-	//     }
-	//     100%
-	//     { 
-	//         -webkit-transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);
-	//                 transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);
-	//
-	//     }
-	// }
-	//
-	// @keyframes v-ringLeftRotate
-	// {
-	//     0%
-	//     {
-	//         -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-	//                 transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-	//     }
-	//     100%
-	//     { 
-	//         -webkit-transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);
-	//                 transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);
-	//
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 72 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-ring v-ring1\" v-bind:style=\"spinnerBasicStyle\">\n    <div class=\"v-ring v-ring2\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-ring v-ring3\" v-bind:style=\"spinnerStyle\">\n    </div></div>\n  </div>\n";
-
-/***/ },
-/* 73 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(74)
-	__vue_script__ = __webpack_require__(76)
-	__vue_template__ = __webpack_require__(77)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/BounceLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 74 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(75);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-575033cd&file=BounceLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BounceLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-575033cd&file=BounceLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BounceLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 75 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n.v-spinner .v-bounce\n{\n          \n}\n\n.v-spinner .v-bounce1\n{\n}\n\n.v-spinner .v-bounce2\n{\n\n    -webkit-animation: v-bounceStretchDelay 2s 1s infinite ease-in-out;\n            animation: v-bounceStretchDelay 2s 1s infinite ease-in-out;\n    -webkit-animation-fill-mode: both;\n            animation-fill-mode: both;\n}\n\n.v-spinner .v-bounce3\n{\n    -webkit-animation: v-bounceStretchDelay 2s 0s infinite ease-in-out;\n            animation: v-bounceStretchDelay 2s 0s infinite ease-in-out;\n    -webkit-animation-fill-mode: both;\n            animation-fill-mode: both;\n}\n\n@-webkit-keyframes v-bounceStretchDelay\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50%\n    { \n        -webkit-transform: scale(1.0);\n                transform: scale(1.0);\n    \n    }\n}\n\n@keyframes v-bounceStretchDelay\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50%\n    { \n        -webkit-transform: scale(1.0);\n                transform: scale(1.0);\n    \n    }\n}\n", "", {"version":3,"sources":["/./src/BounceLoader.vue.style"],"names":[],"mappings":";;AAiEA;;;CAGA;;AAEA;;CAEA;;AAEA;;;IAGA,mEAAA;YACA,2DAAA;IACA,kCAAA;YACA,0BAAA;CACA;;AAEA;;IAEA,mEAAA;YACA,2DAAA;IACA,kCAAA;YACA,0BAAA;CACA;;AAEA;;IAEA;;;QAGA,4BAAA;gBACA,oBAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;;KAEA;CACA;;AAEA;;IAEA;;;QAGA,4BAAA;gBACA,oBAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;;KAEA;CACA","file":"BounceLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-bounce v-bounce1\" v-bind:style=\"spinnerBasicStyle\">\n    <div class=\"v-bounce v-bounce2\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-bounce v-bounce3\" v-bind:style=\"spinnerStyle\">\n    </div></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'BounceLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    size: {\n      type: String,\n      default: '60px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  data () {\n    return {\n      spinnerStyle: {\n        backgroundColor: this.color,\n        height: this.size,\n        width: this.size,\n        borderRadius: this.radius,\n        opacity: 0.6,\n        position: 'absolute',\n        top: 0,\n        left: 0\n      }\n    }\n  },\n  computed: {\n    spinnerBasicStyle () {\n      return {\n        height: this.size,\n        width: this.size,\n        position: 'relative'\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n\n.v-spinner .v-bounce\n{\n          \n}\n\n.v-spinner .v-bounce1\n{\n}\n\n.v-spinner .v-bounce2\n{\n\n    -webkit-animation: v-bounceStretchDelay 2s 1s infinite ease-in-out;\n            animation: v-bounceStretchDelay 2s 1s infinite ease-in-out;\n    -webkit-animation-fill-mode: both;\n            animation-fill-mode: both;\n}\n\n.v-spinner .v-bounce3\n{\n    -webkit-animation: v-bounceStretchDelay 2s 0s infinite ease-in-out;\n            animation: v-bounceStretchDelay 2s 0s infinite ease-in-out;\n    -webkit-animation-fill-mode: both;\n            animation-fill-mode: both;\n}\n\n@-webkit-keyframes v-bounceStretchDelay\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50%\n    { \n        -webkit-transform: scale(1.0);\n                transform: scale(1.0);\n    \n    }\n}\n\n@keyframes v-bounceStretchDelay\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50%\n    { \n        -webkit-transform: scale(1.0);\n                transform: scale(1.0);\n    \n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 76 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-bounce v-bounce1" v-bind:style="spinnerBasicStyle">
-	//     <div class="v-bounce v-bounce2" v-bind:style="spinnerStyle">
-	//     </div><div class="v-bounce v-bounce3" v-bind:style="spinnerStyle">
-	//     </div></div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'BounceLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '60px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  data: function data() {
-	    return {
-	      spinnerStyle: {
-	        backgroundColor: this.color,
-	        height: this.size,
-	        width: this.size,
-	        borderRadius: this.radius,
-	        opacity: 0.6,
-	        position: 'absolute',
-	        top: 0,
-	        left: 0
-	      }
-	    };
-	  },
-	
-	  computed: {
-	    spinnerBasicStyle: function spinnerBasicStyle() {
-	      return {
-	        height: this.size,
-	        width: this.size,
-	        position: 'relative'
-	      };
-	    }
-	  }
-	
-	};
-	// </script>
-	//
-	// <style>
-	//
-	// .v-spinner .v-bounce
-	// {
-	//
-	// }
-	//
-	// .v-spinner .v-bounce1
-	// {
-	// }
-	//
-	// .v-spinner .v-bounce2
-	// {
-	//
-	//     -webkit-animation: v-bounceStretchDelay 2s 1s infinite ease-in-out;
-	//             animation: v-bounceStretchDelay 2s 1s infinite ease-in-out;
-	//     -webkit-animation-fill-mode: both;
-	//             animation-fill-mode: both;
-	// }
-	//
-	// .v-spinner .v-bounce3
-	// {
-	//     -webkit-animation: v-bounceStretchDelay 2s 0s infinite ease-in-out;
-	//             animation: v-bounceStretchDelay 2s 0s infinite ease-in-out;
-	//     -webkit-animation-fill-mode: both;
-	//             animation-fill-mode: both;
-	// }
-	//
-	// @-webkit-keyframes v-bounceStretchDelay
-	// {
-	//     0%,
-	//     100%
-	//     {
-	//         -webkit-transform: scale(0);
-	//                 transform: scale(0);
-	//     }
-	//     50%
-	//     { 
-	//         -webkit-transform: scale(1.0);
-	//                 transform: scale(1.0);
-	//
-	//     }
-	// }
-	//
-	// @keyframes v-bounceStretchDelay
-	// {
-	//     0%,
-	//     100%
-	//     {
-	//         -webkit-transform: scale(0);
-	//                 transform: scale(0);
-	//     }
-	//     50%
-	//     { 
-	//         -webkit-transform: scale(1.0);
-	//                 transform: scale(1.0);
-	//
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 77 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-bounce v-bounce1\" v-bind:style=\"spinnerBasicStyle\">\n    <div class=\"v-bounce v-bounce2\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-bounce v-bounce3\" v-bind:style=\"spinnerStyle\">\n    </div></div>\n  </div>\n";
-
-/***/ },
-/* 78 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(79)
-	__vue_script__ = __webpack_require__(81)
-	__vue_template__ = __webpack_require__(82)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) { (typeof module.exports === "function" ? module.exports.options : module.exports).template = __vue_template__ }
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/Users/greyby/Workspaces/tmp/javascript/vuejs/vue-spinner/src/DotLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 79 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(80);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-44cd439a&file=DotLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./DotLoader.vue", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js?sourceMap!../node_modules/vue-loader/lib/style-rewriter.js?id=_v-44cd439a&file=DotLoader.vue!../node_modules/vue-loader/lib/selector.js?type=style&index=0!./DotLoader.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 80 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n.v-spinner .v-dot\n{\n          \n}\n\n.v-spinner .v-dot1\n{\n\n    -webkit-animation: v-dotRotate 2s 0s infinite linear;\n            animation: v-dotRotate 2s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n}\n\n.v-spinner .v-dot2\n{\n\n    -webkit-animation: v-dotBounce 2s 0s infinite linear;\n            animation: v-dotBounce 2s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    position: 'absolute';\n    top: 0;\n    bottom: auto;\n}\n\n.v-spinner .v-dot3\n{\n    -webkit-animation: v-dotBounce 2s -1s infinite linear;\n            animation: v-dotBounce 2s -1s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    position: 'absolute';\n    top: auto;\n    bottom: 0;            \n}\n\n@-webkit-keyframes v-dotRotate\n{\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n\n@keyframes v-dotRotate\n{\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n\n@-webkit-keyframes v-dotBounce\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50%\n    {\n        -webkit-transform: scale(1.0);\n                transform: scale(1.0);\n    }\n}\n\n@keyframes v-dotBounce\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50%\n    {\n        -webkit-transform: scale(1.0);\n                transform: scale(1.0);\n    }\n}\n", "", {"version":3,"sources":["/./src/DotLoader.vue.style"],"names":[],"mappings":";;AA2DA;;;CAGA;;AAEA;;;IAGA,qDAAA;YACA,6CAAA;IACA,sCAAA;YACA,8BAAA;CACA;;AAEA;;;IAGA,qDAAA;YACA,6CAAA;IACA,sCAAA;YACA,8BAAA;IACA,qBAAA;IACA,OAAA;IACA,aAAA;CACA;;AAEA;;IAEA,sDAAA;YACA,8CAAA;IACA,sCAAA;YACA,8BAAA;IACA,qBAAA;IACA,UAAA;IACA,UAAA;CACA;;AAEA;;IAEA;;QAEA,kCAAA;gBACA,0BAAA;KACA;CACA;;AAEA;;IAEA;;QAEA,kCAAA;gBACA,0BAAA;KACA;CACA;;AAEA;;IAEA;;;QAGA,4BAAA;gBACA,oBAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;KACA;CACA;;AAEA;;IAEA;;;QAGA,4BAAA;gBACA,oBAAA;KACA;IACA;;QAEA,8BAAA;gBACA,sBAAA;KACA;CACA","file":"DotLoader.vue","sourcesContent":["<template>\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-dot v-dot1\" v-bind:style=\"spinnerBasicStyle\">\n    <div class=\"v-dot v-dot2\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-dot v-dot3\" v-bind:style=\"spinnerStyle\">\n    </div></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  \n  name: 'DotLoader',\n\n  props: {\n    loading: {\n      type: Boolean,\n      default: true\n    },\n    color: { \n      type: String,\n      default: '#5dc596'\n    },\n    size: {\n      type: String,\n      default: '60px'\n    },\n    margin: {\n      type: String,\n      default: '2px'\n    },\n    radius: {\n      type: String,\n      default: '100%'\n    }\n  },\n  computed: {\n    spinnerStyle () {\n      return {\n        backgroundColor: this.color,\n        height: parseFloat(this.size)/2 + 'px',\n        width: parseFloat(this.size)/2 + 'px',\n        borderRadius: this.radius\n      }\n    },\n    spinnerBasicStyle () {\n      return {\n        height: this.size,\n        width: this.size,\n        position: 'relative'\n      }\n    }\n  }\n\n}\n</script>\n\n<style>\n\n.v-spinner .v-dot\n{\n          \n}\n\n.v-spinner .v-dot1\n{\n\n    -webkit-animation: v-dotRotate 2s 0s infinite linear;\n            animation: v-dotRotate 2s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n}\n\n.v-spinner .v-dot2\n{\n\n    -webkit-animation: v-dotBounce 2s 0s infinite linear;\n            animation: v-dotBounce 2s 0s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    position: 'absolute';\n    top: 0;\n    bottom: auto;\n}\n\n.v-spinner .v-dot3\n{\n    -webkit-animation: v-dotBounce 2s -1s infinite linear;\n            animation: v-dotBounce 2s -1s infinite linear;\n    -webkit-animation-fill-mode: forwards;\n            animation-fill-mode: forwards;\n    position: 'absolute';\n    top: auto;\n    bottom: 0;            \n}\n\n@-webkit-keyframes v-dotRotate\n{\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n\n@keyframes v-dotRotate\n{\n    100%\n    {\n        -webkit-transform: rotate(360deg);\n                transform: rotate(360deg);\n    }\n}\n\n@-webkit-keyframes v-dotBounce\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50%\n    {\n        -webkit-transform: scale(1.0);\n                transform: scale(1.0);\n    }\n}\n\n@keyframes v-dotBounce\n{\n    0%,\n    100%\n    {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50%\n    {\n        -webkit-transform: scale(1.0);\n                transform: scale(1.0);\n    }\n}\n</style>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 81 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// <template>
-	// <div class="v-spinner" v-show="loading">
-	//     <div class="v-dot v-dot1" v-bind:style="spinnerBasicStyle">
-	//     <div class="v-dot v-dot2" v-bind:style="spinnerStyle">
-	//     </div><div class="v-dot v-dot3" v-bind:style="spinnerStyle">
-	//     </div></div>
-	//   </div>
-	// </template>
-	//
-	// <script>
-	exports.default = {
-	
-	  name: 'DotLoader',
-	
-	  props: {
-	    loading: {
-	      type: Boolean,
-	      default: true
-	    },
-	    color: {
-	      type: String,
-	      default: '#5dc596'
-	    },
-	    size: {
-	      type: String,
-	      default: '60px'
-	    },
-	    margin: {
-	      type: String,
-	      default: '2px'
-	    },
-	    radius: {
-	      type: String,
-	      default: '100%'
-	    }
-	  },
-	  computed: {
-	    spinnerStyle: function spinnerStyle() {
-	      return {
-	        backgroundColor: this.color,
-	        height: parseFloat(this.size) / 2 + 'px',
-	        width: parseFloat(this.size) / 2 + 'px',
-	        borderRadius: this.radius
-	      };
-	    },
-	    spinnerBasicStyle: function spinnerBasicStyle() {
-	      return {
-	        height: this.size,
-	        width: this.size,
-	        position: 'relative'
-	      };
-	    }
-	  }
-	
-	};
-	// </script>
-	//
-	// <style>
-	//
-	// .v-spinner .v-dot
-	// {
-	//
-	// }
-	//
-	// .v-spinner .v-dot1
-	// {
-	//
-	//     -webkit-animation: v-dotRotate 2s 0s infinite linear;
-	//             animation: v-dotRotate 2s 0s infinite linear;
-	//     -webkit-animation-fill-mode: forwards;
-	//             animation-fill-mode: forwards;
-	// }
-	//
-	// .v-spinner .v-dot2
-	// {
-	//
-	//     -webkit-animation: v-dotBounce 2s 0s infinite linear;
-	//             animation: v-dotBounce 2s 0s infinite linear;
-	//     -webkit-animation-fill-mode: forwards;
-	//             animation-fill-mode: forwards;
-	//     position: 'absolute';
-	//     top: 0;
-	//     bottom: auto;
-	// }
-	//
-	// .v-spinner .v-dot3
-	// {
-	//     -webkit-animation: v-dotBounce 2s -1s infinite linear;
-	//             animation: v-dotBounce 2s -1s infinite linear;
-	//     -webkit-animation-fill-mode: forwards;
-	//             animation-fill-mode: forwards;
-	//     position: 'absolute';
-	//     top: auto;
-	//     bottom: 0;            
-	// }
-	//
-	// @-webkit-keyframes v-dotRotate
-	// {
-	//     100%
-	//     {
-	//         -webkit-transform: rotate(360deg);
-	//                 transform: rotate(360deg);
-	//     }
-	// }
-	//
-	// @keyframes v-dotRotate
-	// {
-	//     100%
-	//     {
-	//         -webkit-transform: rotate(360deg);
-	//                 transform: rotate(360deg);
-	//     }
-	// }
-	//
-	// @-webkit-keyframes v-dotBounce
-	// {
-	//     0%,
-	//     100%
-	//     {
-	//         -webkit-transform: scale(0);
-	//                 transform: scale(0);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: scale(1.0);
-	//                 transform: scale(1.0);
-	//     }
-	// }
-	//
-	// @keyframes v-dotBounce
-	// {
-	//     0%,
-	//     100%
-	//     {
-	//         -webkit-transform: scale(0);
-	//                 transform: scale(0);
-	//     }
-	//     50%
-	//     {
-	//         -webkit-transform: scale(1.0);
-	//                 transform: scale(1.0);
-	//     }
-	// }
-	// </style>
-	/* generated by vue-loader */
-
-/***/ },
-/* 82 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"v-spinner\" v-show=\"loading\">\n    <div class=\"v-dot v-dot1\" v-bind:style=\"spinnerBasicStyle\">\n    <div class=\"v-dot v-dot2\" v-bind:style=\"spinnerStyle\">\n    </div><div class=\"v-dot v-dot3\" v-bind:style=\"spinnerStyle\">\n    </div></div>\n  </div>\n";
-
-/***/ }
-/******/ ])
-});
-;
-//# sourceMappingURL=vue-spinner.js.map
-
-/***/ }),
-/* 64 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(65)
-}
-var normalizeComponent = __webpack_require__(1)
-/* script */
-var __vue_script__ = __webpack_require__(67)
-/* template */
-var __vue_template__ = __webpack_require__(68)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/cards/TopList.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-3f3d18c0", Component.options)
-  } else {
-    hotAPI.reload("data-v-3f3d18c0", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 65 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(66);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(13)("7e30bad2", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-3f3d18c0\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../../node_modules/sass-loader/lib/loader.js!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./TopList.vue", function() {
-     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-3f3d18c0\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../../node_modules/sass-loader/lib/loader.js!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./TopList.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 66 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(5)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n.loader {\n  width: 100%;\n}\n.muted {\n  opacity: 0.3;\n  -webkit-transition: 600ms opacity;\n  transition: 600ms opacity;\n}\n.v-list__tile__title:hover .muted {\n  opacity: 0.75;\n}\n.v-list--dense .v-list__tile:not(.v-list__tile--avatar) {\n  height: 24px;\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 67 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    props: ['items']
-});
-
-/***/ }),
-/* 68 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    [
-      _c(
-        "v-list",
-        { attrs: { dense: "" } },
-        _vm._l(_vm.items, function(item, key) {
-          return _c(
-            "v-list-tile",
-            { key: key },
-            [
-              _c(
-                "v-list-tile-content",
-                [
-                  _c(
-                    "v-list-tile-title",
-                    [_vm._t("default", null, { index: key, item: item })],
-                    2
-                  )
-                ],
-                1
-              )
-            ],
-            1
-          )
-        })
-      )
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-3f3d18c0", module.exports)
-  }
-}
-
-/***/ }),
-/* 69 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    { staticClass: "hashtags" },
-    [
-      _c(
-        "v-tabs",
-        {
-          attrs: { dark: "", "slider-color": "teal" },
-          model: {
-            value: _vm.activeTab,
-            callback: function($$v) {
-              _vm.activeTab = $$v
-            },
-            expression: "activeTab"
-          }
-        },
-        [
-          _c("v-tab", { attrs: { ripple: "" } }, [_vm._v("Dashboard")]),
-          _vm._v(" "),
-          _c(
-            "v-tab-item",
-            { staticClass: "p-4" },
-            [
-              _c(
-                "v-layout",
-                {
-                  attrs: {
-                    row: "",
-                    "fill-height": "",
-                    "align-start": "",
-                    "justify-space-between": "",
-                    "grid-list-xs": true
-                  }
-                },
-                [
-                  _c(
-                    "v-flex",
-                    { attrs: { xs24: "", md3: "" } },
-                    [
-                      _c(
-                        "v-card",
-                        { staticClass: "mx-2" },
-                        [
-                          _c(
-                            "v-card-title",
-                            { attrs: { "primary-title": "" } },
-                            [
-                              _c("div", [
-                                _c("h3", { staticClass: "headline mb-0" }, [
-                                  _vm._v("Top 100 Hashtags")
-                                ])
-                              ])
-                            ]
-                          ),
-                          _vm._v(" "),
-                          _vm.isLoading
-                            ? _c(
-                                "v-layout",
-                                {
-                                  staticClass: "loader m-4 p-4",
-                                  attrs: {
-                                    row: "",
-                                    "fill-height": "",
-                                    "align-center": "",
-                                    "justify-center": ""
-                                  }
-                                },
-                                [
-                                  _c("scale-loader", {
-                                    attrs: { loading: _vm.isLoading }
-                                  })
-                                ],
-                                1
-                              )
-                            : _vm._e(),
-                          _vm._v(" "),
-                          !_vm.isLoading
-                            ? _c(
-                                "div",
-                                [
-                                  _c("top-list", {
-                                    attrs: { items: _vm.top },
-                                    scopedSlots: _vm._u([
-                                      {
-                                        key: "default",
-                                        fn: function(listItemScope) {
-                                          return [
-                                            _c(
-                                              "span",
-                                              { staticClass: "muted" },
-                                              [
-                                                _vm._v(
-                                                  _vm._s(
-                                                    listItemScope.index + 1
-                                                  ) + "."
-                                                )
-                                              ]
-                                            ),
-                                            _vm._v(
-                                              " " +
-                                                _vm._s(
-                                                  listItemScope.item.hashtag
-                                                ) +
-                                                "\n                                "
-                                            )
-                                          ]
-                                        }
-                                      }
-                                    ])
-                                  })
-                                ],
-                                1
-                              )
-                            : _vm._e()
-                        ],
-                        1
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-flex",
-                    { attrs: { xs12: "", md9: "" } },
-                    [
-                      _c(
-                        "v-card",
-                        { staticClass: "mx-2" },
-                        [
-                          _c(
-                            "v-card-title",
-                            { attrs: { "primary-title": "" } },
-                            [
-                              _c("div", [
-                                _c("h3", { staticClass: "headline mb-0" }, [
-                                  _vm._v("Hashtags Over Time")
-                                ]),
-                                _vm._v(" "),
-                                _c("div", [_vm._v("Coming Soon")])
-                              ])
-                            ]
-                          )
-                        ],
-                        1
-                      )
-                    ],
-                    1
-                  )
-                ],
-                1
-              )
-            ],
-            1
-          ),
-          _vm._v(" "),
-          _c("v-tab", { attrs: { ripple: "" } }, [_vm._v("Data Browser")]),
-          _vm._v(" "),
-          _c("v-tab-item", { staticClass: "p-4" }, [
-            _vm._v("\n            Data Grid Here.\n        ")
-          ])
-        ],
-        1
-      )
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-40a6cbde", module.exports)
-  }
-}
-
-/***/ }),
-/* 70 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-var normalizeComponent = __webpack_require__(1)
-/* script */
-var __vue_script__ = null
-/* template */
-var __vue_template__ = __webpack_require__(71)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/Links.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-30c158dc", Component.options)
-  } else {
-    hotAPI.reload("data-v-30c158dc", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 71 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "v-card",
-    [
-      _c("v-card-title", { attrs: { "primary-title": "" } }, [
-        _c("div", [
-          _c("h3", { staticClass: "headline mb-0" }, [
-            _vm._v("Links Breakdown")
-          ]),
-          _vm._v(" "),
-          _c("div", [_vm._v("Coming Soon")])
-        ])
-      ])
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-30c158dc", module.exports)
-  }
-}
-
-/***/ }),
-/* 72 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-var normalizeComponent = __webpack_require__(1)
-/* script */
-var __vue_script__ = null
-/* template */
-var __vue_template__ = __webpack_require__(73)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/Keywords.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-e861983e", Component.options)
-  } else {
-    hotAPI.reload("data-v-e861983e", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 73 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "v-card",
-    [
-      _c("v-card-title", { attrs: { "primary-title": "" } }, [
-        _c("div", [
-          _c("h3", { staticClass: "headline mb-0" }, [
-            _vm._v("Keyword Breakdown")
-          ]),
-          _vm._v(" "),
-          _c("div", [_vm._v("Coming Soon")])
-        ])
-      ])
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-e861983e", module.exports)
-  }
-}
-
-/***/ }),
-/* 74 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 75 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 76 */,
-/* 77 */,
-/* 78 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(79);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(13)("69d1f438", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-353fa4ea\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../node_modules/sass-loader/lib/loader.js!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Navigation.vue", function() {
-     var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-353fa4ea\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../node_modules/sass-loader/lib/loader.js!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Navigation.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 79 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(5)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n.navigation {\n  position: relative;\n  overflow: visible;\n}\n.navigation .global-filter {\n    bottom: -42px !important;\n    z-index: 2;\n}\n.navigation .global-filter .fa {\n      margin-right: 5px;\n}\n.navigation .global-filter .fa:before {\n      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);\n      -webkit-transition: 600ms text-shadow;\n      transition: 600ms text-shadow;\n}\n.navigation .global-filter:hover .fa:before {\n      text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 80 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-var normalizeComponent = __webpack_require__(1)
-/* script */
-var __vue_script__ = null
-/* template */
-var __vue_template__ = __webpack_require__(81)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/Tweets.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-293587ce", Component.options)
-  } else {
-    hotAPI.reload("data-v-293587ce", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 81 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "v-card",
-    [
-      _c("v-card-title", { attrs: { "primary-title": "" } }, [
-        _c("div", [
-          _c("h3", { staticClass: "headline mb-0" }, [
-            _vm._v("Tweets Data Browser")
-          ]),
-          _vm._v(" "),
-          _c("div", [_vm._v("Coming Soon")])
-        ])
-      ])
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-293587ce", module.exports)
-  }
-}
-
-/***/ }),
-/* 82 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    data: function data() {
-        return {};
-    },
-    methods: {}
-});
 
 /***/ })
-/******/ ]);
+
+/******/ });

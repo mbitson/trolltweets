@@ -2,12 +2,12 @@ import Vue from 'vue';
 import VueRouter from 'vue-router'
 Vue.use(VueRouter);
 
-import Summary from './components/Summary.vue'
-import Timeline from './components/Timeline.vue'
-import Hashtags from './components/Hashtags.vue'
-import Links from './components/Links.vue'
-import Keywords from './components/Keywords.vue'
-import Tweets from './components/Tweets.vue'
+const Summary = () => System.import('./components/Summary.vue');
+const Timeline = () => System.import('./components/Timeline.vue');
+const Hashtags = () => System.import('./components/Hashtags.vue');
+const Links = () => System.import('./components/Links.vue');
+const Keywords = () => System.import('./components/Keywords.vue');
+const Tweets = () => System.import('./components/Tweets.vue');
 export default new VueRouter({
     routes: [
         {

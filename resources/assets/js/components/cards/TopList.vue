@@ -27,11 +27,11 @@
     .v-list__tile__title{
         &:hover{
             .muted {
-                opacity: 0.75;
+                opacity: 0.95;
             }
         }
     }
     .v-list--dense .v-list__tile:not(.v-list__tile--avatar) {
-        height: 24px;
+        height: 25px;
     }
 </style>

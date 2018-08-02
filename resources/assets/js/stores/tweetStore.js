@@ -8,15 +8,15 @@ export default {
     state: {
         status: '',
         top: [],
-        hashtags: [],
+        tweets: [],
         summary: [],
         count: 0
     },
 
     getters: {
-        getHashtags: state => {
+        getTweets: state => {
             return function(){
-                return state.hashtags;
+                return state.tweets;
             }
         },
         getCount: state => {
@@ -92,13 +92,13 @@ export default {
         error: (state) => {
             state.status = 'error';
         },
-        indexSuccess: (state, hashtags) => {
+        indexSuccess: (state, tweets) => {
             state.status = 'success';
-            state.hashtags = hashtags;
+            state.tweets = tweets;
         },
-        topSuccess: (state, hashtags) => {
+        topSuccess: (state, tweets) => {
             state.status = 'success';
-            state.top = hashtags;
+            state.top = tweets;
         },
         summarySuccess: (state, summary) => {
             state.status = 'success';
@@ -118,10 +118,10 @@ export default {
         index: ({commit, dispatch}) => {
             return new Promise((resolve, reject) => {
                 commit('request');
-                axios({url: 'hashtags', method: 'GET' })
+                axios({url: 'tweets', method: 'GET' })
                     .then(resp => {
-                        const hashtags = resp.data;
-                        commit('indexSuccess', hashtags);
+                        const tweets = resp.data;
+                        commit('indexSuccess', tweets);
                         resolve(resp)
                     })
                     .catch(err => {
@@ -134,7 +134,7 @@ export default {
         summary: ({commit, dispatch}) => {
             return new Promise((resolve, reject) => {
                 commit('request');
-                axios({url: 'hashtags/summary', method: 'GET' })
+                axios({url: 'tweets/summary', method: 'GET' })
                     .then(resp => {
                         const summary = resp.data;
                         commit('summarySuccess', summary);
@@ -150,10 +150,10 @@ export default {
         top: ({commit, dispatch}, limit) => {
             return new Promise((resolve, reject) => {
                 commit('request');
-                axios({url: 'hashtags/top/'+limit, method: 'GET' })
+                axios({url: 'tweets/top/'+limit, method: 'GET' })
                     .then(resp => {
-                        const hashtags = resp.data;
-                        commit('topSuccess', hashtags);
+                        const tweets = resp.data;
+                        commit('topSuccess', tweets);
                         resolve(resp)
                     })
                     .catch(err => {
@@ -166,7 +166,7 @@ export default {
         count: ({commit, dispatch}) => {
             return new Promise((resolve, reject) => {
                 commit('request');
-                axios({url: 'hashtags/count', method: 'GET' })
+                axios({url: 'tweets/count', method: 'GET' })
                     .then(resp => {
                         commit('countSuccess', resp.data);
                         resolve(resp)
