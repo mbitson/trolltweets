@@ -1,7 +1,7 @@
 # TrollTweets
 Vue 2 app for navigating and auditing the tweets that were released by [FiveThirtyEight](https://fivethirtyeight.com/features/why-were-sharing-3-million-russian-troll-tweets/) on [GitHub](https://github.com/fivethirtyeight/russian-troll-tweets/). Uses a backend API built with Laravel 5.6.
 
-##Table of Contents
+## Table of Contents
 
 * [Installation](#installation)
 * [Artisan Commands](#artisan-commands)
