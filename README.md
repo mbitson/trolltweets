@@ -4,7 +4,7 @@ Work in progress tool for navigating and auditing the tweets that were released 
 * [Installation](#installation)
 * [Artisan Commands](#artisan-commands)
     
-#Installation
+# Installation
 #### 1) Checkout Repo
 ```bash
 git clone git@github.com:mbitson/trolltweets.git troll-tweets
