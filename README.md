@@ -3,8 +3,7 @@ Work in progress tool for navigating and auditing the tweets that were released 
 ##Table of Contents
 * [Installation](#installation)
 * [Artisan Commands](#artisan-commands)
-    * [trolls:hashtag](#trolls:hashtag)
-    * [trolls:links](#trolls:links)
+    
 #Installation
 #### 1) Checkout Repo
 ```bash
