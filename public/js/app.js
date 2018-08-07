@@ -459,6 +459,12 @@ module.exports = {
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
+module.exports = __webpack_require__(18);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
  * Vue.js v2.5.16
@@ -11422,12 +11428,6 @@ module.exports = Vue;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(16).setImmediate))
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(18);
-
-/***/ }),
 /* 3 */
 /***/ (function(module, exports) {
 
@@ -13414,8 +13414,8 @@ function toComment(sourceMap) {
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(15);
-__webpack_require__(56);
-module.exports = __webpack_require__(57);
+__webpack_require__(57);
+module.exports = __webpack_require__(58);
 
 
 /***/ }),
@@ -13424,7 +13424,7 @@ module.exports = __webpack_require__(57);
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_axios__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_axios__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_vue_axios__);
@@ -13435,16 +13435,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_vuetify_es5_util_colors__ = __webpack_require__(42);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_vuetify_es5_util_colors___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_vuetify_es5_util_colors__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__appStore_js__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_App_vue__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_App_vue__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_App_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6__components_App_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__appRouter__ = __webpack_require__(54);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__appRouter__ = __webpack_require__(55);
 
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
  * building robust, powerful web applications using Vue and Laravel.
  */
-window.Vue = __webpack_require__(1);
+window.Vue = __webpack_require__(2);
 
 /**
  * Include Axois and VueAxois
@@ -14656,7 +14656,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var _typeof="fun
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(true)
-		module.exports = factory(__webpack_require__(1));
+		module.exports = factory(__webpack_require__(2));
 	else if(typeof define === 'function' && define.amd)
 		define(["vue"], factory);
 	else if(typeof exports === 'object')
@@ -35577,15 +35577,17 @@ exports.default = Object.freeze({
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vuex__ = __webpack_require__(44);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__stores_hashtagStore__ = __webpack_require__(45);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stores_tweetStore__ = __webpack_require__(46);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__stores_annotationsStore__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__stores_filterStore__ = __webpack_require__(48);
 
 
 __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */]);
+
 
 
 
@@ -35594,7 +35596,8 @@ __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1_vuex
     modules: {
         hashtags: __WEBPACK_IMPORTED_MODULE_2__stores_hashtagStore__["a" /* default */],
         tweets: __WEBPACK_IMPORTED_MODULE_3__stores_tweetStore__["a" /* default */],
-        annotations: __WEBPACK_IMPORTED_MODULE_4__stores_annotationsStore__["a" /* default */]
+        annotations: __WEBPACK_IMPORTED_MODULE_4__stores_annotationsStore__["a" /* default */],
+        filter: __WEBPACK_IMPORTED_MODULE_5__stores_filterStore__["a" /* default */]
     }
 }));
 
@@ -36548,7 +36551,7 @@ var index_esm = {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_axios__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_tinycolor2__);
@@ -36744,7 +36747,7 @@ var index_esm = {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_axios__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_tinycolor2__);
@@ -36940,7 +36943,7 @@ var index_esm = {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_axios__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_tinycolor2___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_tinycolor2__);
@@ -37106,14 +37109,197 @@ function AnnotationsMouseOut(e, element) {
 
 /***/ }),
 /* 48 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_axios__);
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    namespaced: true,
+
+    state: {
+        active: {
+            hashtag: [],
+            hashtagText: [],
+            author: [],
+            authorText: [],
+            tweetText: []
+        },
+        saved: false,
+        sheetOpen: false
+    },
+
+    getters: {
+        getActive: function getActive(state) {
+            return state.active;
+        },
+        getSaved: function getSaved(state) {
+            return state.saved;
+        },
+        getSheetOpen: function getSheetOpen(state) {
+            return state.sheetOpen;
+        },
+        getActiveHashtag: function getActiveHashtag(state) {
+            return state.active.hashtag;
+        },
+        getActiveHashtagText: function getActiveHashtagText(state) {
+            return state.active.hashtagText;
+        },
+        getActiveAuthor: function getActiveAuthor(state) {
+            return state.active.author;
+        },
+        getActiveAuthorText: function getActiveAuthorText(state) {
+            return state.active.authorText;
+        },
+        getActiveTweetText: function getActiveTweetText(state) {
+            return state.active.tweetText;
+        },
+        getActiveCount: function getActiveCount(state) {
+            var count = 0;
+            for (var filterType in state.active) {
+                if (state.active.hasOwnProperty(filterType)) {
+                    state.active[filterType].forEach(function (filter) {
+                        if (typeof filter !== 'undefined' && filter !== null && filter.length > 0) {
+                            count++;
+                        }
+                    });
+                }
+            }
+            return count;
+        }
+    },
+
+    mutations: {
+        open: function open(state) {
+            state.sheetOpen = true;
+        },
+        close: function close(state) {
+            state.sheetOpen = false;
+        },
+        clear: function clear(state) {
+            state.active = {
+                hashtag: [],
+                hashtagText: [],
+                author: [],
+                authorText: [],
+                tweetText: []
+            };
+        },
+        setActive: function setActive(state, active) {
+            state.active = active;
+        },
+        setSheetOpen: function setSheetOpen(state, status) {
+            state.sheetOpen = status;
+        },
+        addHashtagFilter: function addHashtagFilter(state, hashtag) {
+            state.saved = false;
+            state.active.hashtag.push(hashtag);
+        },
+        setHashtagFilter: function setHashtagFilter(state, hashtag) {
+            state.saved = false;
+            state.active.hashtag = [hashtag];
+        },
+        addHashtagTextFilter: function addHashtagTextFilter(state, hashtag) {
+            state.saved = false;
+            state.active.hashtagText.push(hashtag);
+        },
+        setHashtagTextFilter: function setHashtagTextFilter(state, hashtag) {
+            state.saved = false;
+            state.active.hashtagText = [hashtag];
+        },
+        addAuthorFilter: function addAuthorFilter(state, author) {
+            state.saved = false;
+            state.active.author.push(author);
+        },
+        setAuthorFilter: function setAuthorFilter(state, author) {
+            state.saved = false;
+            state.active.author = [author];
+        },
+        addAuthorTextFilter: function addAuthorTextFilter(state, hashtag) {
+            state.saved = false;
+            state.active.authorText.push(hashtag);
+        },
+        addTweetTextFilter: function addTweetTextFilter(state, hashtag) {
+            state.saved = false;
+            state.active.tweetText.push(hashtag);
+        },
+        saving: function saving(state) {
+            state.saved = false;
+        },
+        saveSuccess: function saveSuccess(state) {
+            state.saved = true;
+        },
+        saveError: function saveError(state) {
+            state.saved = false;
+        },
+        loadSuccess: function loadSuccess(state, filters) {
+            state.active = filters;
+            state.saved = true;
+        }
+    },
+
+    actions: {
+
+        openFilter: function openFilter(_ref) {
+            var commit = _ref.commit;
+
+            commit('open');
+        },
+        closeFilter: function closeFilter(_ref2) {
+            var commit = _ref2.commit;
+
+            commit('close');
+        },
+        toggleFilter: function toggleFilter(_ref3) {
+            var commit = _ref3.commit,
+                state = _ref3.state;
+
+            state.sheetOpen === false ? commit('open') : commit('close');
+        },
+        save: function save(_ref4) {
+            var commit = _ref4.commit,
+                state = _ref4.state;
+
+            return new Promise(function (resolve, reject) {
+                commit('saving');
+                __WEBPACK_IMPORTED_MODULE_0_axios___default()({ url: 'filters', method: 'POST', data: { active: state.active } }).then(function (resp) {
+                    commit('saveSuccess');
+                    resolve(resp);
+                }).catch(function (err) {
+                    commit('saveError');
+                    reject(err);
+                });
+            });
+        },
+        load: function load(_ref5) {
+            var commit = _ref5.commit,
+                state = _ref5.state;
+
+            return new Promise(function (resolve, reject) {
+                __WEBPACK_IMPORTED_MODULE_0_axios___default()({ url: 'filters', method: 'GET' }).then(function (resp) {
+                    commit('loadSuccess', resp.data);
+                    resolve(resp);
+                }).catch(function (err) {
+                    reject(err);
+                });
+            });
+        }
+
+    }
+});
+
+/***/ }),
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
 var normalizeComponent = __webpack_require__(6)
 /* script */
-var __vue_script__ = __webpack_require__(49)
+var __vue_script__ = __webpack_require__(50)
 /* template */
-var __vue_template__ = __webpack_require__(53)
+var __vue_template__ = __webpack_require__(54)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -37152,12 +37338,12 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Navigation_vue__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Navigation_vue__ = __webpack_require__(51);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Navigation_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__Navigation_vue__);
 //
 //
@@ -37176,15 +37362,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
 var normalizeComponent = __webpack_require__(6)
 /* script */
-var __vue_script__ = __webpack_require__(51)
+var __vue_script__ = __webpack_require__(52)
 /* template */
-var __vue_template__ = __webpack_require__(52)
+var __vue_template__ = __webpack_require__(53)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -37223,7 +37409,7 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -37250,11 +37436,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     data: function data() {
         return {};
     },
-    methods: {}
+    methods: {
+        openLink: function openLink(url) {
+            window.open(url, '_blank');
+        }
+    }
 });
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -37326,8 +37516,7 @@ var render = function() {
                   attrs: { flat: "", icon: "" },
                   on: {
                     click: function($event) {
-                      _vm.window.location =
-                        "https://github.com/mbitson/trolltweets"
+                      _vm.openLink("https://github.com/mbitson/trolltweets")
                     }
                   }
                 },
@@ -37354,7 +37543,7 @@ if (false) {
 }
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -37383,34 +37572,34 @@ if (false) {
 }
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_router__ = __webpack_require__(55);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_router__ = __webpack_require__(56);
 
 
 __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1_vue_router__["a" /* default */]);
 
 var Summary = function Summary() {
-    return __webpack_require__.e/* import() */(2).then(__webpack_require__.bind(null, 58));
+    return __webpack_require__.e/* import() */(2).then(__webpack_require__.bind(null, 59));
 };
 var Timeline = function Timeline() {
-    return __webpack_require__.e/* import() */(3).then(__webpack_require__.bind(null, 59));
+    return __webpack_require__.e/* import() */(3).then(__webpack_require__.bind(null, 60));
 };
 var Hashtags = function Hashtags() {
-    return __webpack_require__.e/* import() */(1).then(__webpack_require__.bind(null, 60));
+    return __webpack_require__.e/* import() */(1).then(__webpack_require__.bind(null, 61));
 };
 var Links = function Links() {
-    return __webpack_require__.e/* import() */(4).then(__webpack_require__.bind(null, 61));
+    return __webpack_require__.e/* import() */(4).then(__webpack_require__.bind(null, 62));
 };
 var Keywords = function Keywords() {
-    return __webpack_require__.e/* import() */(5).then(__webpack_require__.bind(null, 62));
+    return __webpack_require__.e/* import() */(5).then(__webpack_require__.bind(null, 63));
 };
 var Tweets = function Tweets() {
-    return __webpack_require__.e/* import() */(0).then(__webpack_require__.bind(null, 63));
+    return __webpack_require__.e/* import() */(0).then(__webpack_require__.bind(null, 64));
 };
 /* harmony default export */ __webpack_exports__["a"] = (new __WEBPACK_IMPORTED_MODULE_1_vue_router__["a" /* default */]({
     routes: [{
@@ -37441,7 +37630,7 @@ var Tweets = function Tweets() {
 }));
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -40071,13 +40260,13 @@ if (inBrowser && window.Vue) {
 
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin

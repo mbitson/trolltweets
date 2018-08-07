@@ -6,7 +6,7 @@
                     <v-flex>
                         <h3 class="display-3 font-weight-thin">TrollTweets</h3>
 
-                        <span class="subheading">The tweets used on this site are the 3 million tweets shared by <a href="https://fivethirtyeight.com/features/why-were-sharing-3-million-russian-troll-tweets/">FiveThirtyEight</a> on <a href="https://github.com/fivethirtyeight/russian-troll-tweets/">GitHub</a>. This tool simply attempts to make that data easier to visualize and navigate, in the hopes of finding relavent patterns.</span>
+                        <span class="subheading">The tweets used on this site are the 3 million tweets shared by <a href="https://fivethirtyeight.com/features/why-were-sharing-3-million-russian-troll-tweets/">FiveThirtyEight</a> on <a href="https://github.com/fivethirtyeight/russian-troll-tweets/">GitHub</a>. This tool simply attempts to make that data easier to visualize and navigate, in the hopes of finding relevant patterns.</span>
 
                         <v-divider class="my-3"></v-divider>
 

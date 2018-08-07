@@ -10,7 +10,7 @@
                 <!--<v-btn small flat v-on:click="$router.push({'name':'keywords'})">Keywords</v-btn>-->
                 <!--<v-btn small flat v-on:click="$router.push({'name':'timeline'})">Timeline</v-btn>-->
                 <v-btn small flat v-on:click="$router.push({'name':'summary'})">About This Tool</v-btn>
-                <v-btn flat icon v-on:click="window.location = 'https://github.com/mbitson/trolltweets';"><i class="fa fa-github"></i></v-btn>
+                <v-btn flat icon v-on:click="openLink('https://github.com/mbitson/trolltweets')"><i class="fa fa-github"></i></v-btn>
             </div>
         </v-toolbar>
     </div>
@@ -22,6 +22,9 @@
             }
         },
         methods: {
+            openLink(url){
+                window.open(url, '_blank');
+            }
         }
     }
 </script>

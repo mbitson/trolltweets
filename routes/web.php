@@ -16,6 +16,8 @@ Route::get('/', function () {
 });
 
 Route::prefix('api')->group(function(){
+    Route::post('filters', 'FiltersController@save');
+    Route::get('filters', 'FiltersController@show');
     Route::get('hashtags/top/{limit}', 'HashtagController@top');
     Route::get('hashtags/summary', 'HashtagController@summary');
     Route::get('hashtags/count', 'HashtagController@count');

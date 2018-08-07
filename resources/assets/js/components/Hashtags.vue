@@ -10,7 +10,7 @@
                             <v-card-title primary-title>
                                 <div>
                                     <h3 class="headline mb-0">Top 100 Hashtags</h3>
-                                    <span>Try filtering globally to see more specific lists.</span>
+                                    <span>Try filtering globally to see more specific lists. This will ignore the "Hashtag" filter.</span>
                                 </div>
                             </v-card-title>
                             <v-layout row fill-height align-center justify-center v-if="topListLoading" class="m-4 p-4">
@@ -19,7 +19,7 @@
                             <div v-if="!topListLoading">
                                 <top-list :items="top">
                                     <template slot-scope="listItemScope">
-                                        <div class="guage-content">
+                                        <div class="guage-content" v-on:click="filterByHashtag(listItemScope.item.hashtag);">
                                             <span class="muted">{{listItemScope.index+1}}.</span>
                                             {{listItemScope.item.hashtag}}
                                         </div>
@@ -121,24 +121,29 @@
             }
         },
         mounted() {
-            // Prep to load all cards
-            let thisComponent = this;
-
-            // Load top list
-            thisComponent.setTopListLoading(true);
-            this.$store.dispatch('hashtags/top', 100)
-                .then(function(){
-                    thisComponent.setTopListLoading(false);
-                });
-
-            // Load over time
-            thisComponent.setOverTimeLoading(true);
-            this.$store.dispatch('hashtags/summary')
-                .then(function(){
-                    thisComponent.setOverTimeLoading(false);
-                });
+            this.loadData();
         },
         methods: {
+            loadData(){
+                this.loadTopList();
+                this.loadSummary();
+            },
+            loadTopList(){
+                let thisComponent = this;
+                thisComponent.setTopListLoading(true);
+                this.$store.dispatch('hashtags/top', 100)
+                    .then(function(){
+                        thisComponent.setTopListLoading(false);
+                    });
+            },
+            loadSummary(){
+                let thisComponent = this;
+                thisComponent.setOverTimeLoading(true);
+                this.$store.dispatch('hashtags/summary')
+                    .then(function(){
+                        thisComponent.setOverTimeLoading(false);
+                    });
+            },
             setTopListLoading(loading){
                 this.topListLoading = loading;
             },
@@ -147,6 +152,14 @@
             },
             getTopCountPercentage(count){
                 return Math.round(count/this.topCount * 100);
+            },
+            filterByHashtag(hashtag){
+                let thisComponent = this;
+                this.$store.commit('filter/setHashtagFilter', hashtag);
+                this.$store.dispatch('filter/save')
+                    .then(function(){
+                        thisComponent.loadSummary();
+                    });
             }
         },
         computed: {
@@ -158,6 +171,16 @@
             },
             summary: function(){
                 return this.$store.getters['hashtags/getSummaryDataForChart']();
+            },
+            isFilterSaved:  function(){
+                return this.$store.getters['filter/getSaved'];
+            }
+        },
+        watch: {
+            isFilterSaved (newState, oldState){
+                if(oldState === true && newState === false){
+                    this.loadData();
+                }
             }
         }
     }
