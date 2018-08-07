@@ -1,4 +1,4 @@
-# TrollTweets
+# [TrollTweets.com](http://trolltweets.com/)
 Vue 2 app for navigating and auditing the tweets that were released by [FiveThirtyEight](https://fivethirtyeight.com/features/why-were-sharing-3-million-russian-troll-tweets/) on [GitHub](https://github.com/fivethirtyeight/russian-troll-tweets/). Uses a backend API built with Laravel 5.6.
 
 ![TrollTweets.com App Screenshot](./public/screenshot.png)
@@ -80,7 +80,7 @@ Generates link models based on current tweets in database. It's recommended you 
 | --batch-size | The number of tweets should each batch process. | 10 |
 
 ## Changelog
-- 8/7/2018 - Initial launch of the site at trolltweets.com
+- 8/7/2018 - Initial launch of the site at [trolltweets.com](http://trolltweets.com/)
 
 ## Planned Enhancements
 - Add a filter bar showing current filters without opening the bottom sheet.
