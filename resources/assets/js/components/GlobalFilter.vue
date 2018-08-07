@@ -105,11 +105,7 @@
         methods: {
             clearFilters(){
                 this.$store.commit('filter/clear');
-                this.$store.dispatch('filter/save');
             }
-        },
-        mounted(){
-            this.$store.dispatch('filter/load');
         },
         watch: {
             isFilterOpen (newState, oldState){

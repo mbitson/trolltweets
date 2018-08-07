@@ -103,7 +103,7 @@
                 return this.$store.getters['tweets/getCount']().toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             },
             hashtagCount: function(){
-                return this.$store.getters['hashtags/getCount']().toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                return this.$store.getters['hashtags/getCount'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             }
         }
     }

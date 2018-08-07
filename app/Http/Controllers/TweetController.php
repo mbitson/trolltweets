@@ -20,7 +20,7 @@ class TweetController extends FilterableController
         if(!$tweets = Cache::get($cacheKey))
         {
             $tweetsQuery = Tweet::select(DB::raw('author, COUNT(author) AS count'))
-                ->join('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
+                ->leftJoin('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
                 ->groupBy('author')
                 ->orderByRaw('COUNT(*) DESC')
                 ->limit($limit);
@@ -46,7 +46,7 @@ class TweetController extends FilterableController
         if(!$tweets = Cache::get($cacheKey))
         {
             $tweetQuery = Tweet::select(DB::raw('MONTH(publish_date) month, YEAR(publish_date) year, COUNT(*) as count'))
-                ->join('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
+                ->leftJoin('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
                 ->groupBy(['year', 'month']);
 
             $this->addFiltersToQuery($tweetQuery);
@@ -59,7 +59,7 @@ class TweetController extends FilterableController
         if(!$tweetsByCategory = Cache::get($cacheKeyCategorized))
         {
             $tweetsByCategoryQuery = Tweet::select(DB::raw('account_category, MONTH(publish_date) month, YEAR(publish_date) year, COUNT(*) as count'))
-                ->join('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
+                ->leftJoin('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
                 ->groupBy(['account_category', 'year', 'month']);
 
             $this->addFiltersToQuery($tweetsByCategoryQuery);
@@ -85,5 +85,28 @@ class TweetController extends FilterableController
         }
 
         return response()->json($count);
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function categoryTotals()
+    {
+        $cacheKey = $this->determineCacheKey('tweets-by-account-type-totals');
+
+        if(!$categoryTotals = Cache::get($cacheKey))
+        {
+            $categoryTotalsQuery = Tweet::select(DB::raw('account_category, COUNT(*) as count'))
+                ->leftJoin('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
+                ->groupBy(['account_category']);
+
+            $this->addFiltersToQuery($categoryTotalsQuery);
+
+            $categoryTotals = $categoryTotalsQuery->get();
+
+            Cache::forever($cacheKey, $categoryTotals);
+        }
+
+        return response()->json($categoryTotals);
     }
 }

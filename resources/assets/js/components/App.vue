@@ -11,6 +11,9 @@
     export default {
         components: {
             Navigation
-        }
+        },
+        mounted(){
+            this.$store.dispatch('filter/load');
+        },
     }
 </script>

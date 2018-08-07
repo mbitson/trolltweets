@@ -21,7 +21,9 @@ Route::prefix('api')->group(function(){
     Route::get('hashtags/top/{limit}', 'HashtagController@top');
     Route::get('hashtags/summary', 'HashtagController@summary');
     Route::get('hashtags/count', 'HashtagController@count');
+    Route::get('hashtags/categoryTotals', 'HashtagController@categoryTotals');
     Route::get('tweets/top/{limit}', 'TweetController@top');
     Route::get('tweets/summary', 'TweetController@summary');
     Route::get('tweets/count', 'TweetController@count');
+    Route::get('tweets/categoryTotals', 'TweetController@categoryTotals');
 });

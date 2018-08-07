@@ -10,7 +10,8 @@ export default {
         top: [],
         tweets: [],
         summary: [],
-        count: 0
+        count: 0,
+        categoryTotals: []
     },
 
     getters: {
@@ -33,6 +34,40 @@ export default {
             return function(){
                 return state.top[0].count;
             }
+        },
+        getCategoryTotal: state => {
+            let total = 0;
+            state.categoryTotals.forEach(function(category){
+                total+=category.count;
+            });
+            return total;
+        },
+        getCategoryTotals: state => {
+            return state.categoryTotals;
+        },
+        getCategoryTotalsForChart: state => {
+            if(state.categoryTotals.length < 1) return false;
+            let dataset = [];
+            let labels = [];
+            let colors = [];
+            let color = TinyColor('rgba(233,30,99, 0.6)');
+            state.categoryTotals.forEach(function(category){
+                dataset.push(category.count);
+                labels.push(category.account_category);
+                colors.push(color.toString());
+                color = color.spin(40);
+            });
+            return {
+                datasets: [
+                    {
+                        data:dataset,
+                        backgroundColor: colors,
+                        borderWidth: 1,
+                        borderColor: TinyColor('rgba(0,0,0,0.1)').toString()
+                    }
+                ],
+                labels
+            };
         },
         getSummaryDataForChart: state => {
             return function(){
@@ -108,6 +143,10 @@ export default {
             state.status = 'success';
             state.count = count;
         },
+        categoryTotalSuccess: (state, categoryTotals) => {
+            state.status = 'success';
+            state.categoryTotals = categoryTotals;
+        },
         success: (state) => {
             state.status = 'success';
         },
@@ -169,6 +208,21 @@ export default {
                 axios({url: 'tweets/count', method: 'GET' })
                     .then(resp => {
                         commit('countSuccess', resp.data);
+                        resolve(resp)
+                    })
+                    .catch(err => {
+                        commit('error');
+                        reject(err)
+                    })
+            })
+        },
+
+        categoryTotals: ({commit, dispatch}) => {
+            return new Promise((resolve, reject) => {
+                commit('request');
+                axios({url: 'tweets/categoryTotals', method: 'GET' })
+                    .then(resp => {
+                        commit('categoryTotalSuccess', resp.data);
                         resolve(resp)
                     })
                     .catch(err => {

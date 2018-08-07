@@ -119,7 +119,7 @@ export default {
             state.saved = false;
         },
         loadSuccess: (state, filters) => {
-            state.active = filters;
+            Object.keys(filters).forEach(field => state.active[field] = filters[field]);
             state.saved = true;
         }
     },

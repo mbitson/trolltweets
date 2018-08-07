@@ -28,12 +28,14 @@ class FilterableController extends Controller
     public function determineCacheSuffix($excluded = [])
     {
         $suffix = '_';
-        foreach(Session::get('filters') as $filterType => $filters)
-        {
-            if(in_array($filterType, $excluded)) continue;
-            foreach($filters as $filter)
+        if(is_array(Session::get('filters')) && !empty(Session::get('filters'))){
+            foreach(Session::get('filters') as $filterType => $filters)
             {
-                $suffix .= $filterType.'-'.$filter.'_';
+                if(in_array($filterType, $excluded)) continue;
+                foreach($filters as $filter)
+                {
+                    $suffix .= $filterType.'-'.$filter.'_';
+                }
             }
         }
 
@@ -52,36 +54,25 @@ class FilterableController extends Controller
      */
     public function addFiltersToQuery(&$query, $excluded = [])
     {
-        foreach(Session::get('filters') as $filterType => $filters)
+        if(is_array(Session::get('filters')) && !empty(Session::get('filters')))
         {
-            if(in_array($filterType, $excluded)) continue;
-            foreach($filters as $filter)
+            foreach (Session::get('filters') as $filterType => $filters)
             {
-                if(!$filter) continue;
-                if($filterType === 'hashtag')
-                {
-//                    echo "adding filter where hashtags.hashtag = $filter";
-                    $query->where('hashtags.hashtag', '=', $filter);
-                }
-                elseif($filterType === 'hashtagText')
-                {
-//                    echo "adding filter where hashtags.hashtag LIKE %$filter%";
-                    $query->where('hashtags.hashtag', 'like', '%'.$filter.'%');
-                }
-                elseif($filterType === 'author')
-                {
-//                    echo "adding filter where tweets.author = $filter";
-                    $query->where('tweets.author', '=', $filter);
-                }
-                elseif($filterType === 'authorText')
-                {
-//                    echo "adding filter where tweets.author LIKE %$filter%";
-                    $query->where('tweets.author', 'like', '%'.$filter.'%');
-                }
-                elseif($filterType === 'tweetText')
-                {
-//                    echo "adding filter where tweets.content LIKE %$filter%";
-                    $query->where('tweets.content', 'like', '%'.$filter.'%');
+                if (in_array($filterType, $excluded)) continue;
+
+                foreach ($filters as $filter) {
+                    if (!$filter) continue;
+                    if ($filterType === 'hashtag') {
+                        $query->where('hashtags.hashtag', '=', $filter);
+                    } elseif ($filterType === 'hashtagText') {
+                        $query->where('hashtags.hashtag', 'like', '%' . $filter . '%');
+                    } elseif ($filterType === 'author') {
+                        $query->where('tweets.author', '=', $filter);
+                    } elseif ($filterType === 'authorText') {
+                        $query->where('tweets.author', 'like', '%' . $filter . '%');
+                    } elseif ($filterType === 'tweetText') {
+                        $query->where('tweets.content', 'like', '%' . $filter . '%');
+                    }
                 }
             }
         }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Hashtag;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 
 class HashtagController extends FilterableController
@@ -71,6 +72,29 @@ class HashtagController extends FilterableController
         }
 
         return response()->json(['by_month'=>$hashtags, 'by_category'=>$hashtagsByCategory]);
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function categoryTotals()
+    {
+        $cacheKey = $this->determineCacheKey('hashtags-by-account-type-totals');
+
+        if(!$categoryTotals = Cache::get($cacheKey))
+        {
+            $categoryTotalsQuery = Hashtag::select(DB::raw('tweets.account_category, COUNT(*) as count'))
+                ->leftJoin('tweets', 'hashtags.tweet_id', '=', 'tweets.id')
+                ->groupBy(['tweets.account_category']);
+
+            $this->addFiltersToQuery($categoryTotalsQuery);
+
+            $categoryTotals = $categoryTotalsQuery->get();
+
+            Cache::forever($cacheKey, $categoryTotals);
+        }
+
+        return response()->json($categoryTotals);
     }
 
     /**

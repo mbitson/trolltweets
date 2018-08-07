@@ -10,78 +10,104 @@ export default {
         top: [],
         hashtags: [],
         summary: [],
+        categoryTotals: [],
         count: 0
     },
 
     getters: {
         getHashtags: state => {
-            return function(){
-                return state.hashtags;
-            }
+            return state.hashtags;
         },
         getCount: state => {
-            return function(){
-                return state.count;
-            }
+            return state.count;
         },
         getTop: state => {
-            return function(){
-                return state.top;
-            }
+            return state.top;
         },
         getTopCount: state => {
-            return function(){
-                return state.top[0].count;
-            }
+            if(typeof state.top[0] === "undefined") return false;
+            return state.top[0].count;
+        },
+        getCategoryTotal: state => {
+            let total = 0;
+            state.categoryTotals.forEach(function(category){
+                total+=category.count;
+            });
+            return total;
+        },
+        getCategoryTotals: state => {
+            return state.categoryTotals;
+        },
+        getCategoryTotalsForChart: state => {
+            if(state.categoryTotals.length < 1) return false;
+            let dataset = [];
+            let labels = [];
+            let colors = [];
+            let color = TinyColor('rgba(233,30,99, 0.6)');
+            state.categoryTotals.forEach(function(category){
+                dataset.push(category.count);
+                labels.push(category.account_category);
+                colors.push(color.toString());
+                color = color.spin(40);
+            });
+            return {
+                datasets: [
+                    {
+                        data:dataset,
+                        backgroundColor: colors,
+                        borderWidth: 1,
+                        borderColor: TinyColor('rgba(0,0,0,0.1)').toString()
+                    }
+                ],
+                labels
+            };
         },
         getSummaryDataForChart: state => {
-            return function(){
-                let chartConfig = [];
+            let chartConfig = [];
 
-                if(typeof state.summary === 'undefined'){
-                    return false;
-                }
+            if(typeof state.summary === 'undefined'){
+                return false;
+            }
 
-                let byCategory = {};
-                let categories = [];
-                if(typeof state.summary['by_category'] !== 'undefined') {
-                    state.summary['by_category'].forEach(function (record) {
-                        if (typeof byCategory[record.account_category] === 'undefined') {
-                            byCategory[record.account_category] = [];
-                            categories.push(record.account_category);
-                        }
-                        byCategory[record.account_category].push(record);
-                    });
-                    let color = TinyColor('rgba(233,30,99, 0.6)');
-                    categories.forEach(function(category){
-                        byCategory[category].forEach(function(month){
-                            month.x = new Date(month.year, month.month);
-                            month.y = month.count;
-                        });
-                        color = color.spin(40);
-                        chartConfig.push({
-                            label: category,
-                            backgroundColor: color.toString(),
-                            data: byCategory[category],
-                            lineTension: 0
-                        });
-                    });
-                }
-
-                if(typeof state.summary['by_month'] !== 'undefined'){
-                    state.summary['by_month'].forEach(function(month){
+            let byCategory = {};
+            let categories = [];
+            if(typeof state.summary['by_category'] !== 'undefined') {
+                state.summary['by_category'].forEach(function (record) {
+                    if (typeof byCategory[record.account_category] === 'undefined') {
+                        byCategory[record.account_category] = [];
+                        categories.push(record.account_category);
+                    }
+                    byCategory[record.account_category].push(record);
+                });
+                let color = TinyColor('rgba(233,30,99, 0.6)');
+                categories.forEach(function(category){
+                    byCategory[category].forEach(function(month){
                         month.x = new Date(month.year, month.month);
                         month.y = month.count;
                     });
+                    color = color.spin(40);
                     chartConfig.push({
-                        label: 'All Categories',
-                        backgroundColor: 'rgba(233,30,99, 0.6)',
-                        data: state.summary['by_month'],
+                        label: category,
+                        backgroundColor: color.toString(),
+                        data: byCategory[category],
                         lineTension: 0
                     });
-                }
-                return chartConfig;
+                });
             }
+
+            if(typeof state.summary['by_month'] !== 'undefined'){
+                state.summary['by_month'].forEach(function(month){
+                    month.x = new Date(month.year, month.month);
+                    month.y = month.count;
+                });
+                chartConfig.push({
+                    label: 'All Categories',
+                    backgroundColor: 'rgba(233,30,99, 0.6)',
+                    data: state.summary['by_month'],
+                    lineTension: 0
+                });
+            }
+            return chartConfig;
         }
     },
 
@@ -107,6 +133,10 @@ export default {
         countSuccess: (state, count) => {
             state.status = 'success';
             state.count = count;
+        },
+        categoryTotalSuccess: (state, categoryTotals) => {
+            state.status = 'success';
+            state.categoryTotals = categoryTotals;
         },
         success: (state) => {
             state.status = 'success';
@@ -169,6 +199,21 @@ export default {
                 axios({url: 'hashtags/count', method: 'GET' })
                     .then(resp => {
                         commit('countSuccess', resp.data);
+                        resolve(resp)
+                    })
+                    .catch(err => {
+                        commit('error');
+                        reject(err)
+                    })
+            })
+        },
+
+        categoryTotals: ({commit, dispatch}) => {
+            return new Promise((resolve, reject) => {
+                commit('request');
+                axios({url: 'hashtags/categoryTotals', method: 'GET' })
+                    .then(resp => {
+                        commit('categoryTotalSuccess', resp.data);
                         resolve(resp)
                     })
                     .catch(err => {
