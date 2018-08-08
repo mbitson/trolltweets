@@ -41,22 +41,29 @@ php artisan key:generate
 ```bash
 php artisan migrate
 ```
-#### 7) Seed Tweets
+#### 7) Ensure MySQL Timezone is set.
+The timezone must not have a daylight savings time or some inserts will fail.
+```mysql
+SET time_zone = "+00:00";
+SET @@global.time_zone = '+00:00';
+```
+#### 8) Seed Tweets
+This process may take awhile. It will insert new database records for all ~3 million records of the FiveThirtyEight data. You may edit the $recordsPerInsert in TweetTableSeeder.
 ```bash
-php artisan db:seed  # This process may take awhile. (~3 million records)
+php artisan db:seed
 # Will pull tweet data from database/seeds/russian-troll-tweets (a submodule of this repo)
 ```
-#### 8) Extract Elements from Tweets
+#### 9) Extract Elements from Tweets
 ```bash
-php artisan trolls:hashtags  # This process may take awhile. (~3 million records)
-php artisan trolls:links  # This process may take awhile. (~3 million records)
+php artisan trolls:hashtags  # This process may take awhile. Try increasing the --batch-size to make it faster.
+php artisan trolls:links  # This process may take awhile. Try increasing the --batch-size to make it faster.
 ```
-#### 9) Generate Assets
+#### 10) Generate Assets
 ```bash
 npm install
 npm run dev #or `npm run watch` to watch files for changes
 ```
-#### 10) Serve The Site
+#### 11) Serve The Site
 ```bash
 php artisan serve
 ```
@@ -69,7 +76,7 @@ Generates hashtag models based on current tweets in database. It's recommended y
 | Option | Description | Default |
 | --- | --- | --- |
 | --batches | The number of tweet batches to process. 0 will process all tweets. | 0 |
-| --batch-size | The number of tweets should each batch process. | 10 |
+| --batch-size | The number of tweets should each batch process. All hashtags in a batch will be inserted together. | 5000 |
 
 ### trolls:links
 Generates link models based on current tweets in database. It's recommended you seed before extracting links.
@@ -77,7 +84,7 @@ Generates link models based on current tweets in database. It's recommended you 
 | Option | Description | Default |
 | --- | --- | --- |
 | --batches | The number of tweet batches to process. 0 will process all tweets. | 0 |
-| --batch-size | The number of tweets should each batch process. | 10 |
+| --batch-size | The number of tweets should each batch process. All links in a batch will be inserted together.  | 5000 |
 
 ## Changelog
 - 8/7/2018 - Initial launch of the site at [trolltweets.com](http://trolltweets.com/)
@@ -88,7 +95,10 @@ Generates link models based on current tweets in database. It's recommended you 
 - Allow the user to obtain a permalink that applies all current filters.
 
 ## Known Issues
-- In some cases it appears that the tweet totals are incorrect.
+- The total on the by category text listing section appears to be incorrect.
+- Some of the tweets from the dataset are not beiing imported due to the following SQL errors:
+-- Invalid datetime format: 1292 Incorrect datetime value: '2017-03-12 02:23:00' for column 'publish_date' at row 1
+
 
 ## Contributions
 Contributions to this repository are welcome. Simply submit a PR to the `develop` branch and wait for approval. If you have any questions or concerns about the codebase please open an issue.

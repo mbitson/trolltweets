@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Hashtag;
 use App\Tweet;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class ExtractHashtags extends Command
@@ -15,7 +16,7 @@ class ExtractHashtags extends Command
      */
     protected $signature = 'trolls:hashtags 
                             {--batches=0 : How many batches should be run}
-                            {--batch-size=10 : How big should each batch be}';
+                            {--batch-size=5000 : How big should each batch be}';
 
     /**
      * The console command description.
@@ -41,22 +42,24 @@ class ExtractHashtags extends Command
      */
     public function handle()
     {
+        $curTime = microtime(true);
+
         $batches = $this->option('batches');
         $batchSize = $this->option('batch-size');
         $batchesCompleted = 0;
         Tweet::chunk($batchSize, function($tweets) use ($batches, &$batchesCompleted){
+            $hashtagsToInsert = [];
             foreach($tweets as $tweet){
                 preg_match_all("/(#\w+)/", $tweet->content, $hashtagPieces);
                 foreach($hashtagPieces[0] as $hashtagString){
-                    $hashtag = new Hashtag;
-                    $hashtag->fill([
+                    $hashtagsToInsert[] = [
                         'tweet_id' => $tweet->id,
                         'hashtag' => $hashtagString,
                         'used_on' => $tweet->publish_date
-                    ]);
-                    $hashtag->save();
+                    ];
                 }
             }
+            Hashtag::insert($hashtagsToInsert);
             $batchesCompleted++;
             if($batches > 0 && $batchesCompleted >= $batches){
                 echo "Extracted all hashtags from $batchesCompleted batches of tweets. \n";
@@ -65,8 +68,11 @@ class ExtractHashtags extends Command
         });
 
         if($batches === 0){
-            echo "Extracted all hashtags from all tweets using $batchesCompleted batches.";
+            echo "Extracted all hashtags from all tweets using $batchesCompleted batches. \n";
         }
+
+        $timeConsumed = round(microtime(true) - $curTime,3)*1000;
+        echo "Hashtags took $timeConsumed milliseconds to complete \n";
 
         return true;
     }

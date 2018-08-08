@@ -15,7 +15,7 @@ class ExtractLinks extends Command
      */
     protected $signature = 'trolls:links 
                             {--batches=0 : How many batches should be run}
-                            {--batch-size=10 : How big should each batch be}';
+                            {--batch-size=5000 : How big should each batch be}';
 
     /**
      * The console command description.
@@ -41,22 +41,24 @@ class ExtractLinks extends Command
      */
     public function handle()
     {
+        $curTime = microtime(true);
+
         $batches = $this->option('batches');
         $batchSize = $this->option('batch-size');
         $batchesCompleted = 0;
         Tweet::chunk($batchSize, function($tweets) use ($batches, &$batchesCompleted){
+            $linksToInsert = [];
             foreach($tweets as $tweet){
                 preg_match_all('~[a-z]+://\S+~', $tweet->content, $linkPieces);
                 foreach($linkPieces[0] as $url){
-                    $link = new Link;
-                    $link->fill([
+                    $linksToInsert[] = [
                         'tweet_id' => $tweet->id,
                         'url' => $url,
                         'used_on' => $tweet->posted_on
-                    ]);
-                    $link->save();
+                    ];
                 }
             }
+            Link::insert($linksToInsert);
             $batchesCompleted++;
             if($batches > 0 && $batchesCompleted >= $batches){
                 echo "Extracted all links from $batchesCompleted batches of tweets. \n";
@@ -65,8 +67,11 @@ class ExtractLinks extends Command
         });
 
         if($batches === 0){
-            echo "Extracted all links from all tweets using $batchesCompleted batches.";
+            echo "Extracted all links from all tweets using $batchesCompleted batches. \n";
         }
+
+        $timeConsumed = round(microtime(true) - $curTime,3)*1000;
+        echo "Hashtags took $timeConsumed milliseconds to complete \n";
 
         return true;
     }

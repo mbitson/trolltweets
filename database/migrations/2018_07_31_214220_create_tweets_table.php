@@ -16,20 +16,20 @@ class CreateTweetsTable extends Migration
     {
         Schema::create('tweets', function (Blueprint $table) {
             $table->increments('id');
-            $table->bigInteger('external_author_id');
+            $table->bigInteger('external_author_id')->nullable();
             $table->text('author');
             $table->text('content');
-            $table->string('region', 22);
-            $table->string('language', 22);
+            $table->string('region', 50);
+            $table->string('language', 25);
             $table->timestamp('publish_date')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('harvested_date')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->integer('following');
             $table->integer('followers');
             $table->integer('updates');
-            $table->string('post_type', 12);
-            $table->string('account_type', 22);
+            $table->string('post_type', 15);
+            $table->string('account_type', 25);
             $table->boolean('retweet');
-            $table->string('account_category', 22);
+            $table->string('account_category', 25);
             $table->boolean('new_june_2018');
             $table->timestamps();
 
