@@ -1,5 +1,6 @@
 <?php
 
+use App\Hashtag;
 use App\Tweet;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -22,7 +23,7 @@ class TweetTableSeeder extends Seeder
     public function run()
     {
         // Notify the user we're beginning
-        $this->command->getOutput()->writeln('Importing tweets...');
+        $this->command->getOutput()->writeln('Importing tweets & hashtags...');
 
         // Load CSV data from russian-troll-tweets
         $csvFiles = File::files(__DIR__.'/russian-troll-tweets/');
@@ -44,45 +45,94 @@ class TweetTableSeeder extends Seeder
 
                 // Build batches to insert
                 $tweetsToInsert = [];
+                $hashtagsToInsert = [];
                 foreach($csv as $key => $record)
                 {
-                    // Format the record, add it to the batch
-                    $record['harvested_date'] = new Carbon($record['harvested_date']);
-                    $record['publish_date'] = new Carbon($record['publish_date']);
-                    if($record['external_author_id'] === '') $record['external_author_id'] = null;
+                    // Format this record
+                    $this->formatRecord($record);
+
+                    // Add it to the batch
                     $tweetsToInsert[] = $record;
 
-                    // If our batch is big enough to insert..
-                    if($key % $this->recordsPerInsert === 0)
-                    {
-                        // Attempt a batch insert
-                        try{
-                            Tweet::insert($tweetsToInsert);
-                        }catch(Exception $exception){
-                            $this->command->getOutput()->writeln($exception->getMessage());
-                        }
+                    // Add hashtags to their batch
+                    $this->addHashtags($record, $hashtagsToInsert);
 
-                        // Reset our batch
-                        $tweetsToInsert = [];
-                    }
+                    // If our batch is big enough to insert..
+                    if($key % $this->recordsPerInsert === 0) { $this->insert($tweetsToInsert, $hashtagsToInsert); }
                 }
 
                 // If the file finished and there are items still in the batch, insert them
-                if(count($tweetsToInsert)>0)
-                {
-                    // Attempt a batch insert
-                    try{
-                        Tweet::insert($tweetsToInsert);
-                    }catch(Exception $exception){
-                        $this->command->getOutput()->writeln($exception->getMessage());
-                    }
-                }
+                if(count($tweetsToInsert)>0) { $this->insert($tweetsToInsert, $hashtagsToInsert); }
 
+                // Announce the end of this file
                 $this->command->getOutput()->writeln('Finished importing: '.$file['basename']);
             }
         }
 
         // Notify the user we've finished.
         $this->command->getOutput()->writeln('Done importing tweets.');
+    }
+
+    /**
+     * @param $record
+     */
+    private function formatRecord(&$record)
+    {
+        $record['harvested_date'] = new Carbon($record['harvested_date']);
+        $record['publish_date'] = new Carbon($record['publish_date']);
+        $record['publish_date_month'] = $record['publish_date']->month;
+        $record['publish_date_year'] = $record['publish_date']->year;
+        if ($record['external_author_id'] === '') $record['external_author_id'] = null;
+
+        // Derive additional data
+        $hashtagPieces = $hashtagsToInsert = [];
+        preg_match_all("/(#\w+)/", $record['content'], $hashtagPieces);
+        foreach ($hashtagPieces[0] as $hashtagString) {
+            $hashtagsToInsert[] = $hashtagString;
+        }
+        if (count($hashtagsToInsert) > 0) {
+            $record['hashtags'] = json_encode($hashtagsToInsert);
+            $record['hashtagCount'] = count($hashtagsToInsert);
+        } else {
+            $record['hashtags'] = null;
+            $record['hashtagCount'] = null;
+        }
+    }
+
+    public function addHashtags($record, &$hashtagsToInsert)
+    {
+        if($record['hashtags'] === null) return false;
+        foreach(json_decode($record['hashtags']) as $hashtag){
+            $hashtagRecord = $record;
+            $hashtagRecord['hashtag'] = $hashtag;
+            unset($hashtagRecord['hashtagCount'], $hashtagRecord['hashtags']);
+            $hashtagsToInsert[] = $hashtagRecord;
+        }
+        return true;
+    }
+
+    /**
+     * @param $tweetsToInsert
+     * @param $exception
+     */
+    private function insert(&$tweetsToInsert, &$hashtagsToInsert)
+    {
+        // Attempt a batch insert of tweets
+        try {
+            Tweet::insert($tweetsToInsert);
+        } catch (Exception $exception) {
+            $this->command->getOutput()->writeln($exception->getMessage());
+        }
+
+        // Attempt a batch insert of hashtags
+        try {
+            Hashtag::insert($hashtagsToInsert);
+        } catch (Exception $exception) {
+            $this->command->getOutput()->writeln($exception->getMessage());
+        }
+
+        // Reset our batch
+        $tweetsToInsert = [];
+        $hashtagsToInsert = [];
     }
 }

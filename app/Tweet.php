@@ -17,6 +17,8 @@ class Tweet extends Model
         'region',
         'language',
         'publish_date',
+        'publish_date_month',
+        'publish_date_year',
         'harvested_date',
         'following',
         'followers',
@@ -25,22 +27,15 @@ class Tweet extends Model
         'account_type',
         'retweet',
         'account_category',
-        'new_june_2018'
+        'new_june_2018',
+        'hashtags',
+        'hashtagCount'
     ];
 
     /**
-     * Get the hastags for this tweet.
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @var array
      */
-    public function hashtags(){
-        return $this->hasMany('App/Hashtag');
-    }
-
-    /**
-     * Get the links for this tweet.
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function links(){
-        return $this->hasMany('App/Link');
-    }
+    protected $casts = [
+        'hashtags' => 'array'
+    ];
 }

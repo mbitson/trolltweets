@@ -20,7 +20,6 @@ class TweetController extends FilterableController
         if(!$tweets = Cache::get($cacheKey))
         {
             $tweetsQuery = Tweet::select(DB::raw('author, COUNT(author) AS count'))
-                ->leftJoin('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
                 ->groupBy('author')
                 ->orderByRaw('COUNT(*) DESC')
                 ->limit($limit);
@@ -41,25 +40,10 @@ class TweetController extends FilterableController
     public function summary()
     {
         $cacheKeyCategorized = $this->determineCacheKey('tweets-by-account-type');
-        $cacheKey = $this->determineCacheKey('tweets-by-month');
-
-        if(!$tweets = Cache::get($cacheKey))
-        {
-            $tweetQuery = Tweet::select(DB::raw('MONTH(publish_date) month, YEAR(publish_date) year, COUNT(*) as count'))
-                ->leftJoin('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
-                ->groupBy(['year', 'month']);
-
-            $this->addFiltersToQuery($tweetQuery);
-
-            $tweets = $tweetQuery->get();
-
-            Cache::forever($cacheKey, $tweets);
-        }
 
         if(!$tweetsByCategory = Cache::get($cacheKeyCategorized))
         {
-            $tweetsByCategoryQuery = Tweet::select(DB::raw('account_category, MONTH(publish_date) month, YEAR(publish_date) year, COUNT(*) as count'))
-                ->leftJoin('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
+            $tweetsByCategoryQuery = Tweet::select(DB::raw('account_category, publish_date_month as month, publish_date_year as year, COUNT(account_category) as count'))
                 ->groupBy(['account_category', 'year', 'month']);
 
             $this->addFiltersToQuery($tweetsByCategoryQuery);
@@ -69,7 +53,7 @@ class TweetController extends FilterableController
             Cache::forever($cacheKeyCategorized, $tweetsByCategory);
         }
 
-        return response()->json(['by_month'=>$tweets, 'by_category'=>$tweetsByCategory]);
+        return response()->json(['by_category'=>$tweetsByCategory]);
     }
 
     /**
@@ -96,8 +80,7 @@ class TweetController extends FilterableController
 
         if(!$categoryTotals = Cache::get($cacheKey))
         {
-            $categoryTotalsQuery = Tweet::select(DB::raw('account_category, COUNT(*) as count'))
-                ->leftJoin('hashtags', 'tweets.id', '=', 'hashtags.tweet_id')
+            $categoryTotalsQuery = Tweet::select(DB::raw('account_category, COUNT(account_category) as count'))
                 ->groupBy(['account_category']);
 
             $this->addFiltersToQuery($categoryTotalsQuery);
@@ -108,5 +91,37 @@ class TweetController extends FilterableController
         }
 
         return response()->json($categoryTotals);
+    }
+
+    /**
+     * @param $query
+     * @param array $excluded
+     * @return bool
+     */
+    public function addFiltersToQuery(&$query, $excluded = [])
+    {
+        if(is_array(Session::get('filters')) && !empty(Session::get('filters')))
+        {
+            foreach (Session::get('filters') as $filterType => $filters)
+            {
+                if (in_array($filterType, $excluded)) continue;
+
+                foreach ($filters as $filter) {
+                    if (!$filter) continue;
+                    if ($filterType === 'hashtag') {
+                        $query->where('tweets.hashtags', 'like', '%' . $filter . '%');
+                    } elseif ($filterType === 'hashtagText') {
+                        $query->where('tweets.hashtags', 'like', '%' . $filter . '%');
+                    } elseif ($filterType === 'author') {
+                        $query->where('tweets.author', '=', $filter);
+                    } elseif ($filterType === 'authorText') {
+                        $query->where('tweets.author', 'like', '%' . $filter . '%');
+                    } elseif ($filterType === 'tweetText') {
+                        $query->where('tweets.content', 'like', '%' . $filter . '%');
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

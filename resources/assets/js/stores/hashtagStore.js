@@ -1,5 +1,29 @@
 import axios from 'axios'
 import TinyColor from 'tinycolor2'
+import find from 'lodash/find'
+
+function addTicks(data) {
+    if(data.length === 0) return false;
+    let newData = [];
+    let currentMonth = new Date(data[0].x.getTime());
+    let lastMonth = new Date(data[data.length-1].x.getTime());
+    while(currentMonth<=lastMonth) {
+        let foundRecord = find(data, {year: currentMonth.getFullYear(), month: currentMonth.getMonth()});
+        if(foundRecord){
+            newData.push({
+                x: foundRecord.x,
+                y: foundRecord.y
+            });
+        }else{
+            newData.push({
+                x: new Date(currentMonth.getTime()),
+                y: 0
+            });
+        }
+        currentMonth.setMonth(currentMonth.getMonth()+1);
+    }
+    return newData;
+}
 
 export default {
 
@@ -47,8 +71,8 @@ export default {
             state.categoryTotals.forEach(function(category){
                 dataset.push(category.count);
                 labels.push(category.account_category);
-                colors.push(color.toString());
                 color = color.spin(40);
+                colors.push(color.toString());
             });
             return {
                 datasets: [
@@ -79,7 +103,7 @@ export default {
                     }
                     byCategory[record.account_category].push(record);
                 });
-                let color = TinyColor('rgba(233,30,99, 0.6)');
+                let color = TinyColor('rgba(233,30,99, 0.4)');
                 categories.forEach(function(category){
                     byCategory[category].forEach(function(month){
                         month.x = new Date(month.year, month.month);
@@ -89,24 +113,13 @@ export default {
                     chartConfig.push({
                         label: category,
                         backgroundColor: color.toString(),
-                        data: byCategory[category],
-                        lineTension: 0
+                        borderColor: color.toString(),
+                        data: addTicks(byCategory[category]),
+                        lineTension: 0,
                     });
                 });
             }
 
-            if(typeof state.summary['by_month'] !== 'undefined'){
-                state.summary['by_month'].forEach(function(month){
-                    month.x = new Date(month.year, month.month);
-                    month.y = month.count;
-                });
-                chartConfig.push({
-                    label: 'All Categories',
-                    backgroundColor: 'rgba(233,30,99, 0.6)',
-                    data: state.summary['by_month'],
-                    lineTension: 0
-                });
-            }
             return chartConfig;
         }
     },

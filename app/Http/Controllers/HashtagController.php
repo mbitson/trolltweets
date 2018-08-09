@@ -22,7 +22,6 @@ class HashtagController extends FilterableController
         if(!$hashtags = Cache::get($cacheKey))
         {
             $hashtagsQuery = Hashtag::select(DB::raw('hashtag, COUNT(hashtag) AS count'))
-                ->leftJoin('tweets', 'hashtags.tweet_id', '=', 'tweets.id')
                 ->groupBy('hashtag')
                 ->orderByRaw('COUNT(*) DESC')
                 ->limit($limit);
@@ -43,26 +42,11 @@ class HashtagController extends FilterableController
     public function summary()
     {
         $cacheKeyCategorized = $this->determineCacheKey('hashtags-by-account-type');
-        $cacheKey = $this->determineCacheKey('hashtags-by-month');
-
-        if(!$hashtags = Cache::get($cacheKey))
-        {
-            $hashtagsQuery = Hashtag::select(DB::raw('MONTH(used_on) month, YEAR(used_on) year, COUNT(*) as count'))
-                ->leftJoin('tweets', 'hashtags.tweet_id', '=', 'tweets.id')
-                ->groupBy(['year', 'month']);
-
-            $this->addFiltersToQuery($hashtagsQuery);
-
-            $hashtags = $hashtagsQuery->get();
-
-            Cache::forever($cacheKey, $hashtags);
-        }
 
         if(!$hashtagsByCategory = Cache::get($cacheKeyCategorized))
         {
-            $hashtagsByCategoryQuery = Hashtag::select(DB::raw('tweets.account_category, MONTH(used_on) month, YEAR(used_on) year, COUNT(*) as count'))
-                ->leftJoin('tweets', 'hashtags.tweet_id', '=', 'tweets.id')
-                ->groupBy(['tweets.account_category', 'year', 'month']);
+            $hashtagsByCategoryQuery = Hashtag::select(DB::raw('account_category, publish_date_month as month, publish_date_year as year, COUNT(account_category) as count'))
+                ->groupBy(['account_category', 'year', 'month']);
 
             $this->addFiltersToQuery($hashtagsByCategoryQuery);
 
@@ -71,7 +55,7 @@ class HashtagController extends FilterableController
             Cache::forever($cacheKeyCategorized, $hashtagsByCategory);
         }
 
-        return response()->json(['by_month'=>$hashtags, 'by_category'=>$hashtagsByCategory]);
+        return response()->json(['by_category'=>$hashtagsByCategory]);
     }
 
     /**
@@ -83,9 +67,8 @@ class HashtagController extends FilterableController
 
         if(!$categoryTotals = Cache::get($cacheKey))
         {
-            $categoryTotalsQuery = Hashtag::select(DB::raw('tweets.account_category, COUNT(*) as count'))
-                ->leftJoin('tweets', 'hashtags.tweet_id', '=', 'tweets.id')
-                ->groupBy(['tweets.account_category']);
+            $categoryTotalsQuery = Hashtag::select(DB::raw('account_category, COUNT(account_category) as count'))
+                ->groupBy(['account_category']);
 
             $this->addFiltersToQuery($categoryTotalsQuery);
 
@@ -110,5 +93,37 @@ class HashtagController extends FilterableController
         }
 
         return response()->json($count);
+    }
+
+    /**
+     * @param $query
+     * @param array $excluded
+     * @return bool
+     */
+    public function addFiltersToQuery(&$query, $excluded = [])
+    {
+        if(is_array(Session::get('filters')) && !empty(Session::get('filters')))
+        {
+            foreach (Session::get('filters') as $filterType => $filters)
+            {
+                if (in_array($filterType, $excluded)) continue;
+
+                foreach ($filters as $filter) {
+                    if (!$filter) continue;
+                    if ($filterType === 'hashtag') {
+                        $query->where('hashtags.hashtag', '=', $filter);
+                    } elseif ($filterType === 'hashtagText') {
+                        $query->where('hashtags.hashtag', 'like', '%' . $filter . '%');
+                    } elseif ($filterType === 'author') {
+                        $query->where('hashtags.author', '=', $filter);
+                    } elseif ($filterType === 'authorText') {
+                        $query->where('hashtags.author', 'like', '%' . $filter . '%');
+                    } elseif ($filterType === 'tweetText') {
+                        $query->where('hashtags.content', 'like', '%' . $filter . '%');
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

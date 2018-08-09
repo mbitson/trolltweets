@@ -17,7 +17,7 @@ class CreateTweetsTable extends Migration
         Schema::create('tweets', function (Blueprint $table) {
             $table->increments('id');
             $table->bigInteger('external_author_id')->nullable();
-            $table->text('author');
+            $table->string('author', 50);
             $table->text('content');
             $table->string('region', 50);
             $table->string('language', 25);
@@ -31,14 +31,23 @@ class CreateTweetsTable extends Migration
             $table->boolean('retweet');
             $table->string('account_category', 25);
             $table->boolean('new_june_2018');
-            $table->timestamps();
+
+            // Add additional fields
+            $table->text('hashtags')->nullable();
+            $table->integer('hashtagCount')->nullable();
+            $table->integer('publish_date_month');
+            $table->integer('publish_date_year');
 
             // Which fields to index?
+            $table->index('external_author_id');
+            $table->index('author');
             $table->index('language');
             $table->index('region');
             $table->index('post_type');
             $table->index('account_type');
             $table->index('account_category');
+            $table->index('publish_date_month');
+            $table->index('publish_date_year');
         });
     }
 
