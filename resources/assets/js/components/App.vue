@@ -15,5 +15,10 @@
         mounted(){
             this.$store.dispatch('filter/load');
         },
+        watch: {
+            $route (to, from){
+                this.$ga.page(to);
+            }
+        }
     }
 </script>
