@@ -29,6 +29,14 @@ Vue.use(Vuetify, {
 });
 
 /**
+ * Add analytics
+ */
+import VueAnalytics from 'vue-analytics'
+Vue.use(VueAnalytics, {
+    id: 'UA-123751009-1'
+});
+
+/**
  * Include stores
  */
 import store from './appStore.js';
